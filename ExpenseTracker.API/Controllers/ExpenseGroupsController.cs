@@ -9,7 +9,7 @@ using System.Web.Http;
 
 namespace ExpenseTracker.API.Controllers
 {
-    public class ExpenseGroupsController : ApiController // Adding comment to test GitHub's reaction
+    public class ExpenseGroupsController : ApiController
     {
         IExpenseTrackerRepository _repository;
         ExpenseGroupFactory _expenseGroupFactory = new ExpenseGroupFactory();
