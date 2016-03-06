@@ -32,9 +32,15 @@ namespace ExpenseTracker.API.Controllers
             {
                 var expenseGroups = _repository.GetExpenseGroups();
 
-                return Ok(expenseGroups.ToList()
-                    .Select(eg => _expenseGroupFactory.CreateExpenseGroup(eg)));
-
+                if (expenseGroups == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return Ok(expenseGroups.ToList()
+                        .Select(eg => _expenseGroupFactory.CreateExpenseGroup(eg)));
+                }
             }
             catch (Exception)
             {
@@ -48,7 +54,14 @@ namespace ExpenseTracker.API.Controllers
             {
                 var expenseGroup = _repository.GetExpenseGroup(id);
 
-                return Ok(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
+                if (expenseGroup == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return Ok(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
+                }
             }
             catch (Exception)
             {
