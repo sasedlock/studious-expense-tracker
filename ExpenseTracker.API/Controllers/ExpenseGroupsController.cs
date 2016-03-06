@@ -2,6 +2,7 @@
 using ExpenseTracker.Repository.Factories;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -91,6 +92,35 @@ namespace ExpenseTracker.API.Controllers
                         return BadRequest();
                     }
                 }
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
+
+        [HttpPut]
+        public IHttpActionResult Put(int id, [FromBody] DTO.ExpenseGroup expenseGroup)
+        {
+            try
+            {
+                if (expenseGroup == null || expenseGroup.Id == 0 )
+                {
+                    return BadRequest();
+                }
+
+                var result = _repository.UpdateExpenseGroup(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
+                if (result.Status == RepositoryActionStatus.NotFound)
+                {
+                    return NotFound();
+                }
+                if (result.Status == RepositoryActionStatus.Updated)
+                {
+                    return Ok(_expenseGroupFactory.CreateExpenseGroup(result.Entity));
+                }
+                
+                return BadRequest();
+                
             }
             catch (Exception)
             {
