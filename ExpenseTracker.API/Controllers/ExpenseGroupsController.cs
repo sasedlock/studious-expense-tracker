@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Marvin.JsonPatch;
 
 namespace ExpenseTracker.API.Controllers
 {
@@ -104,7 +105,7 @@ namespace ExpenseTracker.API.Controllers
         {
             try
             {
-                if (expenseGroup == null || expenseGroup.Id == 0 )
+                if (expenseGroup == null || expenseGroup.Id == 0 || id == 0)
                 {
                     return BadRequest();
                 }
@@ -127,5 +128,43 @@ namespace ExpenseTracker.API.Controllers
                 return InternalServerError();
             }
         }
+
+        [HttpPatch]
+        public IHttpActionResult Patch(int id, [FromBody] JsonPatchDocument<DTO.ExpenseGroup> expenseGroupPatchDocument)
+        {
+            try
+            {
+                if (expenseGroupPatchDocument == null || id == 0)
+                {
+                    return BadRequest();
+                }
+
+                var expenseGroupToUpdate = _repository.GetExpenseGroup(id);
+
+                if (expenseGroupToUpdate == null)
+                {
+                    return NotFound();
+                }
+
+                var eg = _expenseGroupFactory.CreateExpenseGroup(expenseGroupToUpdate);
+
+                expenseGroupPatchDocument.ApplyTo(eg);
+
+                var result =
+                    _repository.UpdateExpenseGroup(_expenseGroupFactory.CreateExpenseGroup(eg));
+
+                if (result.Status == RepositoryActionStatus.Updated)
+                {
+                    return Ok(_expenseGroupFactory.CreateExpenseGroup(result.Entity));
+                }
+
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
+          
     }
 }
