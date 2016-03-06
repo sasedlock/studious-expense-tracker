@@ -165,6 +165,29 @@ namespace ExpenseTracker.API.Controllers
                 return InternalServerError();
             }
         }
-          
+
+        [HttpDelete]
+        public IHttpActionResult Delete(int id)
+        {
+            try
+            {
+                var result = _repository.DeleteExpenseGroup(id);
+
+                if (result.Status == RepositoryActionStatus.Deleted)
+                {
+                    return StatusCode(HttpStatusCode.NoContent);
+                }
+                if (result.Status == RepositoryActionStatus.NotFound)
+                {
+                    return NotFound();
+                }
+
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }  
     }
 }
