@@ -27,17 +27,17 @@ namespace ExpenseTracker.API.Controllers
             _repository = repository;
         }
 
-        [Route("expensegroups/{id}/expenses")]
-        public IHttpActionResult Get(int id)
+        [Route("expensegroups/{expenseGroupId}/expenses")]
+        public IHttpActionResult Get(int expenseGroupId)
         {
             try
             {
-                if (id == 0)
+                if (expenseGroupId == 0)
                 {
                     return BadRequest();
                 }
 
-                var expenses = _repository.GetExpenses(id);
+                var expenses = _repository.GetExpenses(expenseGroupId);
 
                 if (expenses == null)
                 {
