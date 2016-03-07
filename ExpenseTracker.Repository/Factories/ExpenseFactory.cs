@@ -43,6 +43,15 @@ namespace ExpenseTracker.Repository.Factories
                 Id = expense.Id
             };
         }
-         
+
+        public IEnumerable<Expense> CreateExpenses(IEnumerable<DTO.Expense> expenses)
+        {
+            return expenses.Select(CreateExpense).ToList();
+        }
+
+        public IEnumerable<DTO.Expense> CreateExpenses(IEnumerable<Expense> expenses)
+        {
+            return expenses.Select(CreateExpense).ToList();
+        } 
     }
 }

@@ -26,8 +26,39 @@ namespace ExpenseTracker.API.Controllers
         {
             _repository = repository;
         }
-         
 
+        [Route("expensegroups/{id}/expenses")]
+        public IHttpActionResult Get(int id)
+        {
+            try
+            {
+                if (id == 0)
+                {
+                    return BadRequest();
+                }
+
+                var expenses = _repository.GetExpenses(id);
+
+                if (expenses == null)
+                {
+                    return NotFound();
+                }
+
+                var expensesToReturn = _expenseFactory.CreateExpenses(expenses).ToList();
+
+                if (!expensesToReturn.Any())
+                {
+                    return NotFound();
+                }
+
+                return Ok(expensesToReturn);
+
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
      
 
         [Route("expenses/{id}")]
