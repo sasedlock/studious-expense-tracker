@@ -31,13 +31,25 @@ namespace ExpenseTracker.API.Controllers
         }    
 
 
-        public IHttpActionResult Get(string sort = "id")
+        public IHttpActionResult Get(string sort = "id", string status = null)
         {
             try
             {
                 var expenseGroups = _repository.GetExpenseGroups().ApplySort(sort);
 
-                if (expenseGroups == null)
+                if (status != null)
+                {
+                    var expenseGroupStatus = _repository.GetExpenseGroupStatusses().FirstOrDefault(egs => egs.Description == status);
+                    if (expenseGroupStatus != null)
+                    {
+                        var statusId =
+                            expenseGroupStatus.Id;
+
+                        expenseGroups = expenseGroups.Where(eg => eg.ExpenseGroupStatusId == statusId);
+                    }
+                }
+
+                if (expenseGroups == null || !expenseGroups.Any())
                 {
                     return NotFound();
                 }
