@@ -28,28 +28,6 @@ namespace ExpenseTracker.API.Controllers
             _repository = repository;
         }
 
-        //[Route("expenses/{id}")]
-        //public IHttpActionResult Get(int id)
-        //{
-        //    try
-        //    {
-        //        var expense = _repository.GetExpense(id);
-
-        //        if (expense != null)
-        //        {
-        //            return Ok(_expenseFactory.CreateExpense(expense));
-        //        }
-        //        else
-        //        {
-        //            return NotFound();
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return InternalServerError();
-        //    }
-        //}
-
         [Route("expensegroups/{expenseGroupId}/expenses")]
         public IHttpActionResult Get(int expenseGroupId)
         {

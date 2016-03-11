@@ -4,9 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.UI.WebControls;
+using ExpenseTracker.API.Helpers;
 using Marvin.JsonPatch;
 
 namespace ExpenseTracker.API.Controllers
@@ -28,11 +31,11 @@ namespace ExpenseTracker.API.Controllers
         }    
 
 
-        public IHttpActionResult Get()
+        public IHttpActionResult Get(string sort = "id")
         {
             try
             {
-                var expenseGroups = _repository.GetExpenseGroups();
+                var expenseGroups = _repository.GetExpenseGroups().ApplySort(sort);
 
                 if (expenseGroups == null)
                 {
