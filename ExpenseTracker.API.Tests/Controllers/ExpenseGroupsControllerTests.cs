@@ -23,8 +23,8 @@ namespace ExpenseTracker.API.Tests.Controllers
         private List<Repository.Entities.ExpenseGroup> _expenseGroupEntities;
         private ExpenseGroupsController _controllerToTest;
 
-        [TestMethod]
-        public void GetExpenseGroupsShouldReturnAllAvailableExpenseGroups()
+        [TestInitialize]
+        public void InitializeTests()
         {
             _expenseGroupEntities = new List<ExpenseGroup>
             {
@@ -47,7 +47,7 @@ namespace ExpenseTracker.API.Tests.Controllers
                 new ExpenseGroup
                 {
                     Description = "TestDescription3",
-                    ExpenseGroupStatusId = 3,
+                    ExpenseGroupStatusId = 2,
                     Id = 3,
                     Title = "TestTitle3",
                     UserId = "TestUser3"
@@ -75,7 +75,7 @@ namespace ExpenseTracker.API.Tests.Controllers
                 new DTO.ExpenseGroup
                 {
                     Description = "TestDescription3",
-                    ExpenseGroupStatusId = 3,
+                    ExpenseGroupStatusId = 2,
                     Id = 3,
                     Title = "TestTitle3",
                     UserId = "TestUser3"
@@ -89,7 +89,11 @@ namespace ExpenseTracker.API.Tests.Controllers
             _mockFactory.Setup(f => f.CreateExpenseGroups(_expenseGroupEntities)).Returns(_expenseGroupDtos);
 
             _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+        }
 
+        [TestMethod]
+        public void GetExpenseGroupsShouldReturnAllAvailableExpenseGroups()
+        {
             var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
 
             Assert.IsNotNull(result);
