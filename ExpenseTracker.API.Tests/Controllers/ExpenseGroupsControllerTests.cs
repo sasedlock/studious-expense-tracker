@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -21,11 +22,26 @@ namespace ExpenseTracker.API.Tests.Controllers
         private Mock<IExpenseGroupFactory> _mockFactory;
         private List<DTO.ExpenseGroup> _expenseGroupDtos;
         private List<Repository.Entities.ExpenseGroup> _expenseGroupEntities;
+        private List<Repository.Entities.ExpenseGroupStatus> _expenseGroupStatuses; 
         private ExpenseGroupsController _controllerToTest;
 
         [TestInitialize]
         public void InitializeTests()
         {
+            _expenseGroupStatuses = new List<ExpenseGroupStatus>
+            {
+                new ExpenseGroupStatus
+                {
+                    Description = "open",
+                    Id = 1
+                },
+                new ExpenseGroupStatus
+                {
+                    Description = "confirmed",
+                    Id = 2
+                }
+            };
+
             _expenseGroupEntities = new List<ExpenseGroup>
             {
                 new ExpenseGroup
@@ -84,20 +100,65 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             _mockRespository = new Mock<IExpenseTrackerRepository>();
             _mockRespository.Setup(f => f.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockRespository.Setup(f => f.GetExpenseGroupStatusses()).Returns(_expenseGroupStatuses.AsQueryable());
 
             _mockFactory = new Mock<IExpenseGroupFactory>();
             _mockFactory.Setup(f => f.CreateExpenseGroups(_expenseGroupEntities)).Returns(_expenseGroupDtos);
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            
         }
 
         [TestMethod]
         public void GetExpenseGroupsShouldReturnAllAvailableExpenseGroups()
         {
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+
             var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(result.Content, _expenseGroupDtos);
+            Assert.AreEqual(_expenseGroupDtos, result.Content);
+        }
+
+        [TestMethod]
+        public void GetExpenseGroupsFilterOnStatusReturnsExpectedResult()
+        {
+            var expectedExpenseGroupEntityList = new List<ExpenseGroup>
+            {
+                new ExpenseGroup
+                {
+                    Description = "TestDescription1",
+                    ExpenseGroupStatusId = 1,
+                    ExpenseGroupStatus = null,
+                    Id = 1,
+                    Title = "TestTitle1",
+                    UserId = "TestUser1",
+                    Expenses = new List<Expense>()
+                }
+            };
+
+            var expectedExpenseGroupDtoList = new List<DTO.ExpenseGroup>
+            {
+                new DTO.ExpenseGroup
+                {
+                    Description = "TestDescription1",
+                    ExpenseGroupStatusId = 1,
+                    Id = 1,
+                    Title = "TestTitle1",
+                    UserId = "TestUser1"
+                }
+            };
+
+            _mockFactory.Setup(
+                f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl[0].Description == expectedExpenseGroupEntityList[0].Description)))
+                .Returns(expectedExpenseGroupDtoList);
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+
+            var status = "open";
+            var result = _controllerToTest.Get(status: status) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Content.ToList().Count);
         }
     }
 }
