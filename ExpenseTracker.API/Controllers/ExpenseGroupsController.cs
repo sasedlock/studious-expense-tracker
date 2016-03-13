@@ -31,7 +31,7 @@ namespace ExpenseTracker.API.Controllers
         }    
 
 
-        public IHttpActionResult Get(string sort = "id", string status = null)
+        public IHttpActionResult Get(string sort = "id", string status = null, string userId = null)
         {
             try
             {
@@ -47,6 +47,11 @@ namespace ExpenseTracker.API.Controllers
 
                         expenseGroups = expenseGroups.Where(eg => eg.ExpenseGroupStatusId == statusId);
                     }
+                }
+
+                if (userId != null)
+                {
+                    expenseGroups = expenseGroups.Where(eg => eg.UserId == userId);
                 }
 
                 if (expenseGroups == null || !expenseGroups.Any())
