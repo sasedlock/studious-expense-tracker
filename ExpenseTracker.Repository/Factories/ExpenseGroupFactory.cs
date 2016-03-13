@@ -11,7 +11,7 @@ using ExpenseTracker.Repository.Helpers;
 
 namespace ExpenseTracker.Repository.Factories
 {
-    public class ExpenseGroupFactory
+    public class ExpenseGroupFactory : IExpenseGroupFactory
     {
         ExpenseFactory expenseFactory = new ExpenseFactory();
 
@@ -47,7 +47,14 @@ namespace ExpenseTracker.Repository.Factories
             };
         }
 
-         
-         
+        public IEnumerable<ExpenseGroup> CreateExpenseGroups(IEnumerable<DTO.ExpenseGroup> expenseGroups)
+        {
+            return expenseGroups.Select(this.CreateExpenseGroup);
+        }
+
+        public IEnumerable<DTO.ExpenseGroup> CreateExpenseGroups(IEnumerable<ExpenseGroup> expenseGroups)
+        {
+            return expenseGroups.Select(this.CreateExpenseGroup);
+        } 
     }
 }

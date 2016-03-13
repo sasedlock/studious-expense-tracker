@@ -17,17 +17,16 @@ namespace ExpenseTracker.API.Controllers
     public class ExpenseGroupsController : ApiController
     {
         IExpenseTrackerRepository _repository;
-        ExpenseGroupFactory _expenseGroupFactory = new ExpenseGroupFactory();
+        private IExpenseGroupFactory _expenseGroupFactory;
 
-        public ExpenseGroupsController()
+        public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory() )
         {
-            _repository = new ExpenseTrackerEFRepository(new 
-                Repository.Entities.ExpenseTrackerContext());
         }
 
-        public ExpenseGroupsController(IExpenseTrackerRepository repository)
+        public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory)
         {
             _repository = repository;
+            _expenseGroupFactory = factory;
         }    
 
 
@@ -60,8 +59,7 @@ namespace ExpenseTracker.API.Controllers
                 }
                 else
                 {
-                    return Ok(expenseGroups.ToList()
-                        .Select(eg => _expenseGroupFactory.CreateExpenseGroup(eg)));
+                    return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups.ToList()));
                 }
             }
             catch (Exception)
