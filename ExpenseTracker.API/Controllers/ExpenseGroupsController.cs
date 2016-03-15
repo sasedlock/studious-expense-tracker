@@ -18,6 +18,7 @@ namespace ExpenseTracker.API.Controllers
     {
         IExpenseTrackerRepository _repository;
         private IExpenseGroupFactory _expenseGroupFactory;
+        private const int MaxPageSize = 10;
 
         public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory() )
         {
@@ -30,21 +31,27 @@ namespace ExpenseTracker.API.Controllers
         }    
 
 
-        public IHttpActionResult Get(string sort = "id", string status = null, string userId = null)
+        public IHttpActionResult Get(string sort = "id", string status = null, string userId = null, int pageSize = 5, int pageIndex = 1)
         {
             try
             {
+                pageSize = Math.Min(pageSize, MaxPageSize);
+
                 var expenseGroups = _repository.GetExpenseGroups().ApplySort(sort);
 
                 if (status != null)
                 {
-                    var expenseGroupStatus = _repository.GetExpenseGroupStatusses().FirstOrDefault(egs => egs.Description == status);
+                    var expenseGroupStatus = _repository.GetExpenseGroupStatusses().FirstOrDefault(egs => string.Equals(egs.Description, status, StringComparison.CurrentCultureIgnoreCase));
                     if (expenseGroupStatus != null)
                     {
                         var statusId =
                             expenseGroupStatus.Id;
 
                         expenseGroups = expenseGroups.Where(eg => eg.ExpenseGroupStatusId == statusId);
+                    }
+                    else
+                    {
+                        return BadRequest();
                     }
                 }
 
@@ -57,8 +64,36 @@ namespace ExpenseTracker.API.Controllers
                 {
                     return NotFound();
                 }
+
+                // To implement paging, we must:
+                
+                
+                // 3. Be able to tell the client how to get either the next or previous page (TBD)
+                
                 else
                 {
+                    var numberOfPages = CalculatePageNumbers(expenseGroups.Count(), pageSize);
+
+                    expenseGroups = expenseGroups.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+                    var prevPath = pageIndex > 1
+                        ? Request.RequestUri.AbsolutePath 
+                            + "?sort=" + sort 
+                            + (!string.IsNullOrEmpty(status) ? "&status=" + status : string.Empty)
+                            + (!string.IsNullOrEmpty(userId) ? "&userId=" + userId : string.Empty)
+                            + "&pageSize=" + pageSize
+                            + "&pageIndex=" + (pageIndex - 1)
+                        : Request.RequestUri.AbsolutePath;
+
+                    var nextPath = pageIndex < numberOfPages
+                        ? Request.RequestUri.AbsolutePath
+                            + "?sort=" + sort
+                            + (!string.IsNullOrEmpty(status) ? "&status=" + status : string.Empty)
+                            + (!string.IsNullOrEmpty(userId) ? "&userId=" + userId : string.Empty)
+                            + "&pageSize=" + pageSize
+                            + "&pageIndex=" + (pageIndex + 1)
+                        : Request.RequestUri.AbsolutePath;
+
                     return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups.ToList()));
                 }
             }
@@ -206,6 +241,15 @@ namespace ExpenseTracker.API.Controllers
             {
                 return InternalServerError();
             }
-        }  
+        }
+
+        #region Helper Methods
+
+        public int CalculatePageNumbers(int numberOfRecords, int pageSize)
+        {
+            return numberOfRecords % pageSize == 0 ? (int)numberOfRecords / pageSize : (int)Math.Ceiling((decimal)numberOfRecords / pageSize);
+        }
+
+        #endregion
     }
 }

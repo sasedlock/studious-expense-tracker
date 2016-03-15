@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -110,6 +111,9 @@ namespace ExpenseTracker.API.Tests.Controllers
         public void GetExpenseGroupsShouldReturnAllAvailableExpenseGroups()
         {
             _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
 
             var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
 
@@ -154,6 +158,9 @@ namespace ExpenseTracker.API.Tests.Controllers
                 .Returns(expectedExpenseGroupDtoList);
 
             _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
 
             var status = "open";
             var result =
@@ -200,6 +207,9 @@ namespace ExpenseTracker.API.Tests.Controllers
                 .Returns(expectedExpenseGroupDtoList);
 
             _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
 
             var userId = "TestUser1";
             var result =
@@ -235,6 +245,235 @@ namespace ExpenseTracker.API.Tests.Controllers
             var result = _controllerToTest.Get() as NotFoundResult;
 
             Assert.IsInstanceOfType(result, typeof (NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetExpenseGroupsWithDefaultPagingReturnsExpectedResults()
+        {
+            _expenseGroupEntities = new List<ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupEntities.Add(new ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            _expenseGroupDtos = new List<DTO.ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupDtos.Add(new DTO.ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == 5)))
+                .Returns(_expenseGroupDtos.Take(5));
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
+
+            var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+
+            Assert.AreEqual(5, result.Content.Count());
+            for (var i = 0; i < 5; i++)
+            {
+                Assert.AreEqual(_expenseGroupDtos[i].Id,result.Content.ToList()[i].Id);
+            }
+        }
+
+        [TestMethod]
+        public void GetExpenseGroupsPassingValidPageSizeReturnsExpectedResults()
+        {
+            _expenseGroupEntities = new List<ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupEntities.Add(new ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            _expenseGroupDtos = new List<DTO.ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupDtos.Add(new DTO.ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            var pageSize = 7;
+
+            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == pageSize)))
+                .Returns(_expenseGroupDtos.Take(pageSize));
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
+
+            var result = _controllerToTest.Get(pageSize: pageSize) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+
+            Assert.AreEqual(pageSize, result.Content.Count());
+            for (var i = 0; i < pageSize; i++)
+            {
+                Assert.AreEqual(_expenseGroupDtos[i].Id, result.Content.ToList()[i].Id);
+            }
+        }
+
+        [TestMethod]
+        public void GetExpenseGroupsPassingAbovePageSizeReturnsExpectedResults()
+        {
+            _expenseGroupEntities = new List<ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupEntities.Add(new ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            _expenseGroupDtos = new List<DTO.ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupDtos.Add(new DTO.ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            var pageSize = 12;
+            var maxPageSize = 10;
+
+            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == maxPageSize)))
+                .Returns(_expenseGroupDtos.Take(maxPageSize));
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
+
+            var result = _controllerToTest.Get(pageSize: pageSize) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+
+            Assert.AreEqual(maxPageSize, result.Content.Count());
+            for (var i = 0; i < maxPageSize; i++)
+            {
+                Assert.AreEqual(_expenseGroupDtos[i].Id, result.Content.ToList()[i].Id);
+            }
+        }
+
+        [TestMethod]
+        public void GetExpenseGroupsPassingPageIndexReturnsExpectedResults()
+        {
+            _expenseGroupEntities = new List<ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupEntities.Add(new ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            _expenseGroupDtos = new List<DTO.ExpenseGroup>();
+
+            for (var i = 0; i < 50; i++)
+            {
+                _expenseGroupDtos.Add(new DTO.ExpenseGroup
+                {
+                    Description = "ExpenseGroupDescription" + (i + 1),
+                    ExpenseGroupStatusId = i < 25 ? 1 : 2,
+                    Id = i + 1,
+                    Title = "ExpenseGroupTitle" + (i + 1),
+                    UserId = i < 10 ? "User1" : "User2"
+                });
+            }
+
+            var pageSize = 5;
+            var maxPageSize = 10;
+            var pageIndex = 2;
+
+            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == pageSize && egl.TrueForAll(eg => eg.Id > pageSize))))
+                .Returns(_expenseGroupDtos.Skip((pageIndex - 1) * pageSize).Take(pageSize));
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+            _controllerToTest.Request = new HttpRequestMessage();
+            _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
+            _controllerToTest.Configuration = new HttpConfiguration();
+
+            var result = _controllerToTest.Get(pageIndex: pageIndex) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+
+            Assert.AreEqual(pageSize, result.Content.Count());
+            for (var i = (pageIndex - 1) * pageSize; i < pageSize; i++)
+            {
+                Assert.AreEqual(_expenseGroupDtos[i].Id, result.Content.ToList()[i].Id);
+            }
+        }
+
+        [TestMethod]
+        public void CalculatePageNumbersReturnsExpectedResultEvenlyDistributed()
+        {
+            var expected = 5;
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+
+            var actual = _controllerToTest.CalculatePageNumbers(15, 3);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void CalculatePageNumbersReturnsExpectedResultUnevenlyDistributed()
+        {
+            var expected = 5;
+
+            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object);
+
+            var actual = _controllerToTest.CalculatePageNumbers(14, 3);
+
+            Assert.AreEqual(expected, actual);
         }
     }
 }
