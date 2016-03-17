@@ -7,7 +7,9 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
+using System.Web.Http.Routing;
 using System.Web.UI.WebControls;
 using ExpenseTracker.API.Helpers;
 using Marvin.JsonPatch;
@@ -30,7 +32,7 @@ namespace ExpenseTracker.API.Controllers
             _expenseGroupFactory = factory;
         }    
 
-
+        [Route("api/expensegroups", Name = "ExpenseGroupsList")]
         public IHttpActionResult Get(string sort = "id", string status = null, string userId = null, int pageSize = 5, int pageIndex = 1)
         {
             try
@@ -64,35 +66,50 @@ namespace ExpenseTracker.API.Controllers
                 {
                     return NotFound();
                 }
-
-                // To implement paging, we must:
-                
-                
-                // 3. Be able to tell the client how to get either the next or previous page (TBD)
-                
                 else
                 {
-                    var numberOfPages = CalculatePageNumbers(expenseGroups.Count(), pageSize);
+                    var numberOfResults = expenseGroups.Count();
+                    var numberOfPages = CalculatePageNumbers(numberOfResults, pageSize);
 
                     expenseGroups = expenseGroups.Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
-                    var prevPath = pageIndex > 1
-                        ? Request.RequestUri.AbsolutePath 
-                            + "?sort=" + sort 
-                            + (!string.IsNullOrEmpty(status) ? "&status=" + status : string.Empty)
-                            + (!string.IsNullOrEmpty(userId) ? "&userId=" + userId : string.Empty)
-                            + "&pageSize=" + pageSize
-                            + "&pageIndex=" + (pageIndex - 1)
-                        : Request.RequestUri.AbsolutePath;
+                    var urlHelper = new UrlHelper(Request);
 
-                    var nextPath = pageIndex < numberOfPages
-                        ? Request.RequestUri.AbsolutePath
-                            + "?sort=" + sort
-                            + (!string.IsNullOrEmpty(status) ? "&status=" + status : string.Empty)
-                            + (!string.IsNullOrEmpty(userId) ? "&userId=" + userId : string.Empty)
-                            + "&pageSize=" + pageSize
-                            + "&pageIndex=" + (pageIndex + 1)
-                        : Request.RequestUri.AbsolutePath;
+                    var prevLink = 
+                        pageIndex > 1 ?
+                        urlHelper.Link("ExpenseGroupsList",
+                        new
+                        {
+                            pageIndex = pageIndex - 1,
+                            pageSize = pageSize,
+                            sort = sort,
+                            status = status,
+                            userId = userId
+                        }) : "";
+
+                    var nextLink = pageIndex < numberOfPages ?
+                        urlHelper.Link("ExpenseGroupsList",
+                        new
+                        {
+                            pageIndex = pageIndex + 1,
+                            pageSize = pageSize,
+                            sort = sort,
+                            status = status,
+                            userId = userId
+                        }) : "";
+
+                    var paginationHeader = new
+                    {
+                        currentPage = pageIndex,
+                        pageSize = pageSize,
+                        totalCount = numberOfResults,
+                        totalPages = numberOfPages,
+                        previousPageLink = prevLink,
+                        nextPageLink = nextLink
+                    };
+
+                    HttpContext.Current.Response.Headers.Add("X-Pagination",
+                        Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
 
                     return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups.ToList()));
                 }
