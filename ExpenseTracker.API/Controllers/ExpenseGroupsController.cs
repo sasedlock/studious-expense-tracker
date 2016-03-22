@@ -108,13 +108,13 @@ namespace ExpenseTracker.API.Controllers
                         nextPageLink = nextLink
                     };
 
-                    HttpContext.Current.Response.Headers.Add("X-Pagination",
+                    HttpContext.Current.Response.AddHeader("X-Pagination",
                         Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
 
                     return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups.ToList()));
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return InternalServerError();
             }

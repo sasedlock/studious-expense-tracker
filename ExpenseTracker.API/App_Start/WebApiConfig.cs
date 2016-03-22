@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using System.Web.Routing;
 
 namespace ExpenseTracker.API
 {
@@ -17,9 +18,10 @@ namespace ExpenseTracker.API
             // Web API routes
             config.MapHttpAttributeRoutes();
 
-            config.Routes.MapHttpRoute(name: "DefaultRouting",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional });
+            //config.Routes.MapHttpRoute(name: "DefaultRouting",
+            //    routeTemplate: "api/{controller}/{id}",
+            //    defaults: new { id = RouteParameter.Optional });
+            config.Routes.AddHttpRoutes();
 
             config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
 
@@ -34,6 +36,43 @@ namespace ExpenseTracker.API
 
             return config;
              
+        }
+
+        public static void AddHttpRoutes(this HttpRouteCollection routeCollection)
+        {
+            var routes = GetRoutes();
+            routes.ForEach(route => routeCollection.MapHttpRoute(route.Name, route.Template, route.Defaults));
+        }
+
+        public static void AddHttpRoutes(this RouteCollection routeCollection)
+        {
+            var routes = GetRoutes();
+            routes.ForEach(route => routeCollection.MapHttpRoute(route.Name, route.Template, route.Defaults));
+        }
+
+        private static List<Route> GetRoutes()
+        {
+            return new List<Route>
+               {
+                   new Route(
+                       "DefaultRouting",
+                       "api/{controller}/{id}",
+                       new { id = RouteParameter.Optional })
+               };
+        }
+
+        private class Route
+        {
+            public string Name { get; set; }
+            public string Template { get; set; }
+            public object Defaults { get; set; }
+
+            public Route(string name, string template, object defaults)
+            {
+                this.Name = name;
+                this.Template = template;
+                this.Defaults = defaults;
+            }
         }
     }
 }
