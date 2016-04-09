@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Web;
 using System.Web.Http;
+using ExpenseTracker.API.Helpers;
 
 namespace ExpenseTracker.API.Controllers
 {
@@ -29,7 +30,7 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [Route("expensegroups/{expenseGroupId}/expenses")]
-        public IHttpActionResult Get(int expenseGroupId)
+        public IHttpActionResult Get(int expenseGroupId, string sort = "id")
         {
             try
             {
@@ -38,7 +39,7 @@ namespace ExpenseTracker.API.Controllers
                     return BadRequest();
                 }
 
-                var expenses = _repository.GetExpenses(expenseGroupId);
+                var expenses = _repository.GetExpenses(expenseGroupId).ApplySort(sort);
 
                 if (expenses == null)
                 {
