@@ -20,9 +20,10 @@ namespace ExpenseTracker.API.Controllers
     {
         IExpenseTrackerRepository _repository;
         private IExpenseGroupFactory _expenseGroupFactory;
+        public IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
 
-        public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory() )
+        public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory())
         {
         }
 
@@ -73,11 +74,12 @@ namespace ExpenseTracker.API.Controllers
 
                     expenseGroups = expenseGroups.Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
-                    var urlHelper = new UrlHelper(Request);
+                    //var urlHelper = new UrlHelper(Request);
+                    _urlHelper = new ExpenseTrackerUrlHelper(Request);
 
                     var prevLink = 
                         pageIndex > 1 ?
-                        urlHelper.Link("ExpenseGroupsList",
+                        _urlHelper.Link("ExpenseGroupsList",
                         new
                         {
                             pageIndex = pageIndex - 1,
@@ -87,8 +89,9 @@ namespace ExpenseTracker.API.Controllers
                             userId = userId
                         }) : "";
 
-                    var nextLink = pageIndex < numberOfPages ?
-                        urlHelper.Link("ExpenseGroupsList",
+                    var nextLink =
+                        pageIndex < numberOfPages ?
+                        _urlHelper.Link("ExpenseGroupsList",
                         new
                         {
                             pageIndex = pageIndex + 1,

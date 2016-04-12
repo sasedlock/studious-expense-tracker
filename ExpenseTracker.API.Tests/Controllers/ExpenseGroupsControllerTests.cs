@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Principal;
+using System.Threading;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Results;
+using System.Web.Routing;
+using System.Web.SessionState;
 using ExpenseTracker.API.Controllers;
 using ExpenseTracker.Repository;
 using ExpenseTracker.Repository.Entities;
@@ -22,6 +28,8 @@ namespace ExpenseTracker.API.Tests.Controllers
         private List<Repository.Entities.ExpenseGroup> _expenseGroupEntities;
         private List<Repository.Entities.ExpenseGroupStatus> _expenseGroupStatuses;
         private ExpenseGroupsController _controllerToTest;
+
+        private HttpClient _client;
 
         [TestInitialize]
         public void InitializeTests()
@@ -102,6 +110,16 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             _mockFactory = new Mock<IExpenseGroupFactory>();
             _mockFactory.Setup(f => f.CreateExpenseGroups(_expenseGroupEntities)).Returns(_expenseGroupDtos);
+
+            var config = new HttpConfiguration();
+            config.Routes.AddHttpRoutes();
+            config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
+
+            var server = new HttpServer(config);
+            _client = new HttpClient(server);
+
+            HttpContext.Current = this.FakeHttpContext(
+                new Dictionary<string, object>(), "http://localhost:43321/api/");
         }
 
         [TestMethod]
@@ -472,5 +490,36 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             Assert.AreEqual(expected, actual);
         }
+
+        #region Helpers
+
+        public HttpContext FakeHttpContext(Dictionary<string, object> sessionVariables, string path)
+        {
+            var httpRequest = new HttpRequest(string.Empty, path, string.Empty);
+            var stringWriter = new StringWriter();
+            var httpResponce = new HttpResponse(stringWriter);
+            var httpContext = new HttpContext(httpRequest, httpResponce);
+            httpContext.User = new GenericPrincipal(new GenericIdentity("username"), new string[0]);
+            Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity("username"), new string[0]);
+            var sessionContainer = new HttpSessionStateContainer(
+              "id",
+              new SessionStateItemCollection(),
+              new HttpStaticObjectsCollection(),
+              10,
+              true,
+              HttpCookieMode.AutoDetect,
+              SessionStateMode.InProc,
+              false);
+
+            foreach (var var in sessionVariables)
+            {
+                sessionContainer.Add(var.Key, var.Value);
+            }
+
+            SessionStateUtility.AddHttpSessionStateToContext(httpContext, sessionContainer);
+            return httpContext;
+        }
+
+        #endregion
     }
 }
