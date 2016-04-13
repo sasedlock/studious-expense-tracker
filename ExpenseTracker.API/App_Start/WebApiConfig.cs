@@ -18,9 +18,6 @@ namespace ExpenseTracker.API
             // Web API routes
             config.MapHttpAttributeRoutes();
 
-            //config.Routes.MapHttpRoute(name: "DefaultRouting",
-            //    routeTemplate: "api/{controller}/{id}",
-            //    defaults: new { id = RouteParameter.Optional });
             config.Routes.AddHttpRoutes();
 
             config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
