@@ -15,25 +15,28 @@ namespace ExpenseTracker.API.Controllers
     [RoutePrefix("api")]
     public class ExpensesController : ApiController
     {
+        private IExpenseTrackerRepository _repository;
+        private ExpenseFactory _expenseFactory = new ExpenseFactory();
+        private IUrlHelper _urlHelper;
+        private const int MaxPageSize = 10;
 
-        IExpenseTrackerRepository _repository;
-        ExpenseFactory _expenseFactory = new ExpenseFactory();
-
-        public ExpensesController()
+        public ExpensesController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseTrackerUrlHelper())
         {
-            _repository = new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext());
         }
 
-        public ExpensesController(IExpenseTrackerRepository repository)
+        public ExpensesController(IExpenseTrackerRepository repository, IUrlHelper urlHelper)
         {
             _repository = repository;
+            _urlHelper = urlHelper;
         }
 
-        [Route("expensegroups/{expenseGroupId}/expenses")]
-        public IHttpActionResult Get(int expenseGroupId, string sort = "id")
+        [Route("expensegroups/{expenseGroupId}/expenses", Name = "ExpensesList")]
+        public IHttpActionResult Get(int expenseGroupId, string sort = "id", int pageSize = 5, int pageIndex = 1)
         {
             try
             {
+                pageSize = Math.Min(pageSize, MaxPageSize);
+                
                 if (expenseGroupId == 0)
                 {
                     return BadRequest();
@@ -45,6 +48,44 @@ namespace ExpenseTracker.API.Controllers
                 {
                     return NotFound();
                 }
+
+                var numberOfResults = expenses.Count();
+                var numberOfPages = CalculatePageNumbers(numberOfResults, pageSize);
+
+                expenses = expenses.Skip((pageIndex - 1)*pageSize).Take(pageSize);
+
+                var prevLink =
+                        pageIndex > 1 ?
+                        _urlHelper.Link("ExpensesList",
+                        new
+                        {
+                            pageIndex = pageIndex - 1,
+                            pageSize = pageSize,
+                            sort = sort,
+                        }, Request) : "";
+
+                var nextLink =
+                    pageIndex < numberOfPages ?
+                    _urlHelper.Link("ExpensesList",
+                    new
+                    {
+                        pageIndex = pageIndex + 1,
+                        pageSize = pageSize,
+                        sort = sort,
+                    }, Request) : "";
+
+                var paginationHeader = new
+                {
+                    currentPage = pageIndex,
+                    pageSize = pageSize,
+                    totalCount = numberOfResults,
+                    totalPages = numberOfPages,
+                    previousPageLink = prevLink,
+                    nextPageLink = nextLink
+                };
+
+                HttpContext.Current.Response.AddHeader("X-Pagination",
+                    Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
 
                 var expensesToReturn = _expenseFactory.CreateExpenses(expenses).ToList();
 
@@ -231,6 +272,15 @@ namespace ExpenseTracker.API.Controllers
                 return InternalServerError();
             }
         }
+
+        #region Helper Methods
+
+        public int CalculatePageNumbers(int numberOfRecords, int pageSize) // TODO - Refactor to consolidate for other controllers
+        {
+            return numberOfRecords % pageSize == 0 ? (int)numberOfRecords / pageSize : (int)Math.Ceiling((decimal)numberOfRecords / pageSize);
+        }
+
+        #endregion
 
 
 

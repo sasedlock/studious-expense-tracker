@@ -20,7 +20,7 @@ namespace ExpenseTracker.API.Controllers
     {
         IExpenseTrackerRepository _repository;
         private IExpenseGroupFactory _expenseGroupFactory;
-        public IUrlHelper _urlHelper;
+        private IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
 
         public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory(), new ExpenseTrackerUrlHelper())
