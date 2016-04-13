@@ -10,23 +10,17 @@ namespace ExpenseTracker.API.Helpers
 {
     public interface IUrlHelper
     {
-        string Link(string routeName, object routeValues);
+        string Link(string routeName, object routeValues, HttpRequestMessage request);
     }
 
     public class ExpenseTrackerUrlHelper : IUrlHelper
     {
-        public ExpenseTrackerUrlHelper(HttpRequestMessage request)
-        {
-            urlHelper = new UrlHelper(request);
-        }
-
         public ExpenseTrackerUrlHelper() { }
 
-        public string Link(string rounteName, object routeValues)
+        public string Link(string rounteName, object routeValues, HttpRequestMessage request)
         {
+            var urlHelper = new UrlHelper(request);
             return urlHelper.Link(rounteName, routeValues);
         }
-
-        public UrlHelper urlHelper { get; set; }
     }
 }

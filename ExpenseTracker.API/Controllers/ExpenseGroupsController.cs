@@ -23,14 +23,15 @@ namespace ExpenseTracker.API.Controllers
         public IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
 
-        public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory())
+        public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory(), new ExpenseTrackerUrlHelper())
         {
         }
 
-        public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory)
+        public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory, IUrlHelper helper)
         {
             _repository = repository;
             _expenseGroupFactory = factory;
+            _urlHelper = helper;
         }    
 
         [Route("api/expensegroups", Name = "ExpenseGroupsList")]
@@ -74,9 +75,6 @@ namespace ExpenseTracker.API.Controllers
 
                     expenseGroups = expenseGroups.Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
-                    //var urlHelper = new UrlHelper(Request);
-                    _urlHelper = new ExpenseTrackerUrlHelper(Request);
-
                     var prevLink = 
                         pageIndex > 1 ?
                         _urlHelper.Link("ExpenseGroupsList",
@@ -87,7 +85,7 @@ namespace ExpenseTracker.API.Controllers
                             sort = sort,
                             status = status,
                             userId = userId
-                        }) : "";
+                        }, Request) : "";
 
                     var nextLink =
                         pageIndex < numberOfPages ?
@@ -99,7 +97,7 @@ namespace ExpenseTracker.API.Controllers
                             sort = sort,
                             status = status,
                             userId = userId
-                        }) : "";
+                        }, Request) : "";
 
                     var paginationHeader = new
                     {
