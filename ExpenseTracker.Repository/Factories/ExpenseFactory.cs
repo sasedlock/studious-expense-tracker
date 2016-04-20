@@ -52,6 +52,35 @@ namespace ExpenseTracker.Repository.Factories
         public IEnumerable<DTO.Expense> CreateExpenses(IEnumerable<Expense> expenses)
         {
             return expenses.Select(CreateExpense).ToList();
-        } 
+        }
+
+        public object CreateDataShapedObject(Expense expense, List<string> fieldList)
+        {
+            return CreateDataShapedObject(CreateExpense(expense), fieldList);
+        }
+
+        public object CreateDataShapedObject(DTO.Expense expense, List<string> fieldList)
+        {
+            if (!fieldList.Any())
+            {
+                return expense;
+            }
+            else
+            {
+                ExpandoObject objectToReturn = new ExpandoObject();
+
+                foreach (var field in fieldList)
+                {
+                    var fieldValue =
+                        expense.GetType()
+                            .GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                            .GetValue(expense, null);
+
+                    ((IDictionary<string, object>) objectToReturn).Add(field, fieldValue);
+                }
+
+                return objectToReturn;
+            }
+        }
     }
 }

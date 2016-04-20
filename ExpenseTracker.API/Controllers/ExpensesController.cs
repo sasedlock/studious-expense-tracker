@@ -31,7 +31,7 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [Route("expensegroups/{expenseGroupId}/expenses", Name = "ExpensesList")]
-        public IHttpActionResult Get(int expenseGroupId, string sort = "id", int pageSize = 5, int pageIndex = 1)
+        public IHttpActionResult Get(int expenseGroupId, string fields = null, string sort = "id", int pageSize = 5, int pageIndex = 1)
         {
             try
             {
@@ -40,6 +40,13 @@ namespace ExpenseTracker.API.Controllers
                 if (expenseGroupId == 0)
                 {
                     return BadRequest();
+                }
+
+                List<string> listOfFields = new List<string>();
+
+                if (fields != null)
+                {
+                    listOfFields = fields.ToLower().Split(',').ToList();
                 }
 
                 var expenses = _repository.GetExpenses(expenseGroupId).ApplySort(sort);
@@ -60,6 +67,7 @@ namespace ExpenseTracker.API.Controllers
                         new
                         {
                             pageIndex = pageIndex - 1,
+                            fields = fields,
                             pageSize = pageSize,
                             sort = sort,
                         }, Request) : "";
@@ -70,6 +78,7 @@ namespace ExpenseTracker.API.Controllers
                     new
                     {
                         pageIndex = pageIndex + 1,
+                        fields = fields,
                         pageSize = pageSize,
                         sort = sort,
                     }, Request) : "";
@@ -87,7 +96,8 @@ namespace ExpenseTracker.API.Controllers
                 HttpContext.Current.Response.AddHeader("X-Pagination",
                     Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
 
-                var expensesToReturn = _expenseFactory.CreateExpenses(expenses).ToList();
+                var expensesToReturn =
+                    expenses.ToList().Select(exp => _expenseFactory.CreateDataShapedObject(exp, listOfFields));
 
                 if (!expensesToReturn.Any())
                 {
