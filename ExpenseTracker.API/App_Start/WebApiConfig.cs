@@ -31,8 +31,10 @@ namespace ExpenseTracker.API
             config.Formatters.JsonFormatter.SerializerSettings.ContractResolver
                 = new CamelCasePropertyNamesContractResolver();
 
+            var cacheCowMessageHandler = new CacheCow.Server.CachingHandler(config);
+            config.MessageHandlers.Add(cacheCowMessageHandler);
+
             return config;
-             
         }
 
         public static void AddHttpRoutes(this HttpRouteCollection routeCollection)
