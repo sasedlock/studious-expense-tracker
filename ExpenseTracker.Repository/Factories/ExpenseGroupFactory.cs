@@ -55,6 +55,66 @@ namespace ExpenseTracker.Repository.Factories
         public IEnumerable<DTO.ExpenseGroup> CreateExpenseGroups(IEnumerable<ExpenseGroup> expenseGroups)
         {
             return expenseGroups.Select(this.CreateExpenseGroup);
-        } 
+        }
+
+        public object CreateDataShapedObject(ExpenseGroup expenseGroup, List<string> fieldList)
+        {
+            return CreateDataShapedObject(CreateExpenseGroup(expenseGroup), fieldList);
+        }
+
+        public object CreateDataShapedObject(DTO.ExpenseGroup expenseGroup, List<string> fieldList)
+        {
+            List<string> listOfFieldsToWorkWith = new List<string>(fieldList);
+
+            if (!listOfFieldsToWorkWith.Any())
+            {
+                return expenseGroup;
+            }
+            else
+            {
+                var listOfExpenseFields = listOfFieldsToWorkWith.Where(f => f.Contains("expenses")).ToList();
+
+                var returnPartialExpenses = listOfExpenseFields.Any() && !listOfExpenseFields.Contains("expenses");
+
+                if (returnPartialExpenses)
+                {
+                    listOfFieldsToWorkWith.RemoveRange(listOfExpenseFields);
+                        // removes expense-related fields from the original list of fields
+                    listOfExpenseFields =
+                        listOfExpenseFields.Select(f => f.Substring(f.IndexOf(".", StringComparison.Ordinal) + 1))
+                            .ToList();
+                }
+                else
+                {
+                    listOfExpenseFields.Remove("expenses");
+                    listOfFieldsToWorkWith.RemoveRange(listOfExpenseFields);
+                }    
+
+                ExpandoObject objectToReturn = new ExpandoObject();
+
+                foreach (var field in listOfFieldsToWorkWith)
+                {
+                    var fieldValue =
+                        expenseGroup.GetType()
+                            .GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                            .GetValue(expenseGroup, null);
+
+                    ((IDictionary<string, object>) objectToReturn).Add(field, fieldValue);
+                }
+
+                if (returnPartialExpenses)
+                {
+                    List<object> expenses = new List<object>();
+                    foreach (var expense in expenseGroup.Expenses)
+                    {
+                        expenses.Add(expenseFactory.CreateDataShapedObject(expense, listOfExpenseFields));
+                    }
+
+                    ((IDictionary<string, object>) objectToReturn).Add("expenses", expenses);
+                }
+
+                return objectToReturn;
+            }
+        }
     }
 }

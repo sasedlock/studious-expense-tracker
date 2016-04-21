@@ -13,5 +13,7 @@ namespace ExpenseTracker.Repository.Factories
         DTO.ExpenseGroup CreateExpenseGroup(ExpenseGroup expenseGroup);
         IEnumerable<ExpenseGroup> CreateExpenseGroups(IEnumerable<DTO.ExpenseGroup> expenseGroups);
         IEnumerable<DTO.ExpenseGroup> CreateExpenseGroups(IEnumerable<ExpenseGroup> expenseGroups);
+        object CreateDataShapedObject(ExpenseGroup expenseGroup, List<string> fieldList);
+        object CreateDataShapedObject(DTO.ExpenseGroup expenseGroup, List<string> fieldList);
     }
 }

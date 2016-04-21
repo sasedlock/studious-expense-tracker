@@ -35,13 +35,27 @@ namespace ExpenseTracker.API.Controllers
         }    
 
         [Route("api/expensegroups", Name = "ExpenseGroupsList")]
-        public IHttpActionResult Get(string sort = "id", string status = null, string userId = null, int pageSize = 5, int pageIndex = 1)
+        public IHttpActionResult Get(string sort = "id", string fields = null, string status = null, string userId = null, int pageSize = 5, int pageIndex = 1)
         {
             try
             {
                 pageSize = Math.Min(pageSize, MaxPageSize);
 
-                var expenseGroups = _repository.GetExpenseGroups().ApplySort(sort);
+                List<string> listOfFields = new List<string>();
+
+                var includeExpenses = false;
+
+                if (fields != null)
+                {
+                    listOfFields = fields.ToLower().Split(',').ToList();
+                    includeExpenses = listOfFields.Any(f => f.Contains("expenses"));
+                }
+
+                IQueryable<Repository.Entities.ExpenseGroup> expenseGroups = null;
+
+                expenseGroups = includeExpenses ? 
+                    _repository.GetExpenseGroupsWithExpenses().ApplySort(sort) : 
+                    _repository.GetExpenseGroups().ApplySort(sort);
 
                 if (status != null)
                 {
@@ -82,6 +96,7 @@ namespace ExpenseTracker.API.Controllers
                         {
                             pageIndex = pageIndex - 1,
                             pageSize = pageSize,
+                            fields = fields,
                             sort = sort,
                             status = status,
                             userId = userId
@@ -93,6 +108,7 @@ namespace ExpenseTracker.API.Controllers
                         new
                         {
                             pageIndex = pageIndex + 1,
+                            fields = fields,
                             pageSize = pageSize,
                             sort = sort,
                             status = status,
@@ -112,7 +128,10 @@ namespace ExpenseTracker.API.Controllers
                     HttpContext.Current.Response.AddHeader("X-Pagination",
                         Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
 
-                    return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups.ToList()));
+                    return
+                        Ok(
+                            expenseGroups.ToList()
+                                .Select(expGrp => _expenseGroupFactory.CreateDataShapedObject(expGrp, listOfFields)));
                 }
             }
             catch (Exception ex)
