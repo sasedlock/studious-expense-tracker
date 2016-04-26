@@ -90,7 +90,10 @@ namespace ExpenseTracker.API.Loggers
 
         public IQueryable<Expense> GetExpenses(int expenseGroupId)
         {
-            return this._inner.GetExpenses(expenseGroupId);
+            using (Log.Logger.BeginTimedOperation("Getting Expenses by ExpenseGroup"))
+            {
+                return this._inner.GetExpenses(expenseGroupId);
+            }
         }
 
         public RepositoryActionResult<Expense> InsertExpense(Expense e)
