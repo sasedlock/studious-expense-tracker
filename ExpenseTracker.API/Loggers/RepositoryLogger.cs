@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using ExpenseTracker.Repository;
 using ExpenseTracker.Repository.Entities;
+using Serilog;
 
 namespace ExpenseTracker.API.Loggers
 {
@@ -37,7 +38,9 @@ namespace ExpenseTracker.API.Loggers
 
         public ExpenseGroup GetExpenseGroup(int id)
         {
-            return this._inner.GetExpenseGroup(id);
+            var result = this._inner.GetExpenseGroup(id);
+            Log.Information("The result of getting ExpenseGroup with id {id} is {@result}", id, result);
+            return result;
         }
 
         public ExpenseGroup GetExpenseGroup(int id, string userId)
