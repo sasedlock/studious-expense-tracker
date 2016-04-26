@@ -12,6 +12,7 @@ using System.Web.Http;
 using System.Web.Http.Routing;
 using System.Web.UI.WebControls;
 using ExpenseTracker.API.Helpers;
+using ExpenseTracker.API.Loggers;
 using Marvin.JsonPatch;
 
 namespace ExpenseTracker.API.Controllers
@@ -23,7 +24,12 @@ namespace ExpenseTracker.API.Controllers
         private IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
 
-        public ExpenseGroupsController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseGroupFactory(), new ExpenseTrackerUrlHelper())
+        public ExpenseGroupsController() : this(
+            new RepositoryLogger(
+                new ExpenseTrackerEFRepository(
+                    new Repository.Entities.ExpenseTrackerContext())), 
+            new ExpenseGroupFactory(), 
+            new ExpenseTrackerUrlHelper())
         {
         }
 

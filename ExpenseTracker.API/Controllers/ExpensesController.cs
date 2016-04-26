@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Web;
 using System.Web.Http;
 using ExpenseTracker.API.Helpers;
+using ExpenseTracker.API.Loggers;
 
 namespace ExpenseTracker.API.Controllers
 {
@@ -20,7 +21,11 @@ namespace ExpenseTracker.API.Controllers
         private IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
 
-        public ExpensesController() : this(new ExpenseTrackerEFRepository(new Repository.Entities.ExpenseTrackerContext()), new ExpenseTrackerUrlHelper())
+        public ExpensesController() : this(
+            new RepositoryLogger( 
+                new ExpenseTrackerEFRepository(
+                    new Repository.Entities.ExpenseTrackerContext())), 
+            new ExpenseTrackerUrlHelper())
         {
         }
 
