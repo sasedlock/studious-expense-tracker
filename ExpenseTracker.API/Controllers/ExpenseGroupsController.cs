@@ -24,14 +24,14 @@ namespace ExpenseTracker.API.Controllers
         private IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
 
-        public ExpenseGroupsController() : this(
-            new RepositoryLogger(
-                new ExpenseTrackerEFRepository(
-                    new Repository.Entities.ExpenseTrackerContext())), 
-            new ExpenseGroupFactory(), 
-            new ExpenseTrackerUrlHelper())
-        {
-        }
+        //public ExpenseGroupsController() : this(
+        //    new RepositoryLogger(
+        //        new ExpenseTrackerEFRepository(
+        //            new Repository.Entities.ExpenseTrackerContext())), 
+        //    new ExpenseGroupFactory(), 
+        //    new ExpenseTrackerUrlHelper())
+        //{
+        //}
 
         public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory, IUrlHelper helper)
         {

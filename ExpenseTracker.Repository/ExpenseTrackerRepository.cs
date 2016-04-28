@@ -17,9 +17,9 @@ namespace ExpenseTracker.Repository
         // this allows us to show what can go wrong if you don't include the
         // user check.
 
-        ExpenseTrackerContext _ctx;
+        private IExpenseTrackerDbContext _ctx;
 
-        public ExpenseTrackerEFRepository(ExpenseTrackerContext ctx)
+        public ExpenseTrackerEFRepository(IExpenseTrackerDbContext ctx)
         {
             _ctx = ctx;
             
@@ -30,7 +30,7 @@ namespace ExpenseTracker.Repository
             // We don't want that, so we turn it off.  We want to eagerly load them (using Include)
             // manually.
 
-            _ctx.Configuration.LazyLoadingEnabled = false;
+            //_ctx.Configuration.LazyLoadingEnabled = false;
 
         }
 
@@ -231,13 +231,15 @@ namespace ExpenseTracker.Repository
                     // as the entity is already in the dbSet
 
                     // set original entity state to detached
-                    _ctx.Entry(existingExpense).State = EntityState.Detached;
+                    //_ctx.Entry(existingExpense).State = EntityState.Detached;
+                    _ctx.SetDetached(existingExpense);
 
                     // attach & save
                     _ctx.Expenses.Attach(e);
 
                     // set the updated entity state to modified, so it gets updated.
-                    _ctx.Entry(e).State = EntityState.Modified;
+                    //_ctx.Entry(e).State = EntityState.Modified;
+                    _ctx.SetModified(e);
 
 
                     var result = _ctx.SaveChanges();

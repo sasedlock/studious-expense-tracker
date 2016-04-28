@@ -73,6 +73,7 @@
     <Compile Include="Entities\ExpenseGroup.cs" />
     <Compile Include="Entities\ExpenseGroupStatus.cs" />
     <Compile Include="Entities\ExpenseTrackerContext.cs" />
+    <Compile Include="Entities\IExpenseTrackerDbContext.cs" />
     <Compile Include="ExpenseTrackerRepository.cs" />
     <Compile Include="Factories\ExpenseFactory.cs" />
     <Compile Include="Factories\ExpenseGroupFactory.cs" />

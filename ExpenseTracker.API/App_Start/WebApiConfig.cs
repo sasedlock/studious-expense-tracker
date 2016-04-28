@@ -4,8 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Routing;
+using Autofac;
+using Autofac.Core;
+using Autofac.Integration.WebApi;
+using ExpenseTracker.API.Helpers;
+using ExpenseTracker.API.Loggers;
+using ExpenseTracker.Repository;
+using ExpenseTracker.Repository.Entities;
+using ExpenseTracker.Repository.Factories;
 
 namespace ExpenseTracker.API
 {
@@ -13,12 +22,33 @@ namespace ExpenseTracker.API
     {
         public static HttpConfiguration Register()
         {
+            //SetUpIoC();
+
             var config = new HttpConfiguration();
 
             // Web API routes
             config.MapHttpAttributeRoutes();
 
             config.Routes.AddHttpRoutes();
+
+            var builder = new ContainerBuilder();
+
+            builder.RegisterType<ExpenseTrackerContext>().As<IExpenseTrackerDbContext>();
+            builder.RegisterType<ExpenseTrackerEFRepository>()
+                .Named<IExpenseTrackerRepository>("repository");
+            builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
+            builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();
+
+            builder.RegisterDecorator<IExpenseTrackerRepository>(
+                (r, inner) => new RepositoryLogger(inner),
+                fromKey: "repository"
+                );
+
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+
+            var container = builder.Build();
+
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
             config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
 
@@ -36,6 +66,17 @@ namespace ExpenseTracker.API
 
             return config;
         }
+
+        //private static void SetUpIoC()
+        //{
+        //    var builder = new ContainerBuilder();
+
+        //    builder.RegisterType<RepositoryLogger>().As<IExpenseTrackerRepository>();
+
+        //    Container = builder.Build();
+        //}
+
+        //private static IContainer Container { get; set; }
 
         public static void AddHttpRoutes(this HttpRouteCollection routeCollection)
         {

@@ -1,3 +1,5 @@
+using System.Data.Entity.Infrastructure;
+
 namespace ExpenseTracker.Repository.Entities
 {
     using System;
@@ -5,7 +7,7 @@ namespace ExpenseTracker.Repository.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
 
-    public partial class ExpenseTrackerContext : DbContext
+    public partial class ExpenseTrackerContext : DbContext, IExpenseTrackerDbContext
     {
         public ExpenseTrackerContext()
             : base("name=ExpenseTrackerContext")
@@ -34,6 +36,21 @@ namespace ExpenseTracker.Repository.Entities
                 .HasForeignKey(e => e.ExpenseGroupStatusId)
                 .WillCascadeOnDelete(false);
 
+        }
+
+        public void SetModified(Object entity)
+        {
+            Entry(entity).State = EntityState.Modified;
+        }
+
+        public void SetDetached(Object entity)
+        {
+            Entry(entity).State = EntityState.Detached;
+        }
+
+        DbEntityEntry Entry(Object entity)
+        {
+            return base.Entry(entity);
         }
     }
 }
