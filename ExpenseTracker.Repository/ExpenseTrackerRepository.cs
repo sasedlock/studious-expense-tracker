@@ -30,7 +30,7 @@ namespace ExpenseTracker.Repository
             // We don't want that, so we turn it off.  We want to eagerly load them (using Include)
             // manually.
 
-            //_ctx.Configuration.LazyLoadingEnabled = false;
+            _ctx.Configuration.LazyLoadingEnabled = false;
 
         }
 

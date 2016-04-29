@@ -17,5 +17,6 @@ namespace ExpenseTracker.Repository.Entities
         DbEntityEntry Entry(Object entity);
         void SetModified(Object entity);
         void SetDetached(Object entity);
+        DbContextConfiguration Configuration { get; }
     }
 }
