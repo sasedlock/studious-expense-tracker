@@ -10,5 +10,6 @@ namespace ExpenseTracker.Repository.Dapper
     public interface IExpenseTrackerDapperRepository
     {
         IEnumerable<ExpenseGroup> GetAllExpenseGroups();
+        IEnumerable<ExpenseGroup> GetAllExpenseGroupsWithExpenses();
     }
 }

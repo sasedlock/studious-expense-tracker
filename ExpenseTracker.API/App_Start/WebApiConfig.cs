@@ -13,6 +13,7 @@ using Autofac.Integration.WebApi;
 using ExpenseTracker.API.Helpers;
 using ExpenseTracker.API.Loggers;
 using ExpenseTracker.Repository;
+using ExpenseTracker.Repository.Dapper;
 using ExpenseTracker.Repository.Entities;
 using ExpenseTracker.Repository.Factories;
 
@@ -36,6 +37,7 @@ namespace ExpenseTracker.API
             builder.RegisterType<ExpenseTrackerContext>().As<IExpenseTrackerDbContext>();
             builder.RegisterType<ExpenseTrackerEFRepository>()
                 .Named<IExpenseTrackerRepository>("repository");
+            builder.RegisterType<ExpenseTrackerDapperRepository>().As<IExpenseTrackerDapperRepository>();
             builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
             builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();
 

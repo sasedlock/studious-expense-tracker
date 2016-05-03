@@ -13,6 +13,7 @@ using System.Web.Http.Routing;
 using System.Web.UI.WebControls;
 using ExpenseTracker.API.Helpers;
 using ExpenseTracker.API.Loggers;
+using ExpenseTracker.Repository.Dapper;
 using Marvin.JsonPatch;
 
 namespace ExpenseTracker.API.Controllers
@@ -22,23 +23,46 @@ namespace ExpenseTracker.API.Controllers
         IExpenseTrackerRepository _repository;
         private IExpenseGroupFactory _expenseGroupFactory;
         private IUrlHelper _urlHelper;
+        private IExpenseTrackerDapperRepository _dapperRepository;
         private const int MaxPageSize = 10;
 
-        //public ExpenseGroupsController() : this(
-        //    new RepositoryLogger(
-        //        new ExpenseTrackerEFRepository(
-        //            new Repository.Entities.ExpenseTrackerContext())), 
-        //    new ExpenseGroupFactory(), 
-        //    new ExpenseTrackerUrlHelper())
-        //{
-        //}
-
-        public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory, IUrlHelper helper)
+        public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory, IUrlHelper helper, IExpenseTrackerDapperRepository dapperRepository)
         {
             _repository = repository;
             _expenseGroupFactory = factory;
             _urlHelper = helper;
-        }    
+            _dapperRepository = dapperRepository;
+        }
+
+        [Route("api/expensegroupsfaster")]
+        public IHttpActionResult GetAll()
+        {
+            try
+            {
+                var expenseGroups = _dapperRepository.GetAllExpenseGroups();
+
+                return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups));
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError();   
+            }
+        }
+
+        [Route("api/expensegroupswithexpensesfaster")]
+        public IHttpActionResult GetAllWithExpenses()
+        {
+            try
+            {
+                var expenseGroups = _dapperRepository.GetAllExpenseGroupsWithExpenses();
+
+                return Ok(_expenseGroupFactory.CreateExpenseGroups(expenseGroups));
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError();
+            }
+        }
 
         [Route("api/expensegroups", Name = "ExpenseGroupsList")]
         public IHttpActionResult Get(string sort = "id", string fields = null, string status = null, string userId = null, int pageSize = 5, int pageIndex = 1)
