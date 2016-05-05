@@ -66,7 +66,7 @@ namespace ExpenseTracker.API
             var cacheCowMessageHandler = new CacheCow.Server.CachingHandler(config);
             config.MessageHandlers.Add(cacheCowMessageHandler);
 
-            return config;
+            return config; // test
         }
 
         public static void AddHttpRoutes(this HttpRouteCollection routeCollection)
