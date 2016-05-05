@@ -69,17 +69,6 @@ namespace ExpenseTracker.API
             return config;
         }
 
-        //private static void SetUpIoC()
-        //{
-        //    var builder = new ContainerBuilder();
-
-        //    builder.RegisterType<RepositoryLogger>().As<IExpenseTrackerRepository>();
-
-        //    Container = builder.Build();
-        //}
-
-        //private static IContainer Container { get; set; }
-
         public static void AddHttpRoutes(this HttpRouteCollection routeCollection)
         {
             var routes = GetRoutes();
