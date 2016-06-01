@@ -7,14 +7,12 @@ namespace ExpenseTracker.Repository.Entities
     using System.Data.Entity.Spatial;
 
     [Table("ExpenseGroup")]
-    public partial class ExpenseGroup
+    public class ExpenseGroup : ExpenseGroupModel
     {
         public ExpenseGroup()
         {
             Expenses = new HashSet<Expense>();
         }
-
-        public int Id { get; set; }
 
         [Required]
         [StringLength(100)]

@@ -6,15 +6,12 @@ namespace ExpenseTracker.Repository.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class ExpenseGroupStatus
+    public class ExpenseGroupStatus : ExpenseGroupModel
     {
         public ExpenseGroupStatus()
         {
             ExpenseGroups = new HashSet<ExpenseGroup>();
         }
-
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int Id { get; set; }
 
         [Required]
         [StringLength(50)]

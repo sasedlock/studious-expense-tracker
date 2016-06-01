@@ -14,21 +14,24 @@ using System.Web.UI.WebControls;
 using ExpenseTracker.API.Helpers;
 using ExpenseTracker.API.Loggers;
 using ExpenseTracker.Repository.Dapper;
+using ExpenseTracker.Repository.Interfaces;
 using Marvin.JsonPatch;
 
 namespace ExpenseTracker.API.Controllers
 {
     public class ExpenseGroupsController : ApiController
     {
-        IExpenseTrackerRepository _repository;
-        private IExpenseGroupFactory _expenseGroupFactory;
-        private IUrlHelper _urlHelper;
-        private IExpenseTrackerDapperRepository _dapperRepository;
+        private readonly IExpenseGroupRepository _repository;
+        private readonly IExpenseGroupStatusRepository _statusRepository;
+        private readonly IExpenseGroupFactory _expenseGroupFactory;
+        private readonly IUrlHelper _urlHelper;
+        private readonly IExpenseTrackerDapperRepository _dapperRepository;
         private const int MaxPageSize = 10;
 
-        public ExpenseGroupsController(IExpenseTrackerRepository repository, IExpenseGroupFactory factory, IUrlHelper helper, IExpenseTrackerDapperRepository dapperRepository)
+        public ExpenseGroupsController(IExpenseGroupRepository repository, IExpenseGroupStatusRepository statusRepository, IExpenseGroupFactory factory, IUrlHelper helper, IExpenseTrackerDapperRepository dapperRepository)
         {
             _repository = repository;
+            _statusRepository = statusRepository;
             _expenseGroupFactory = factory;
             _urlHelper = helper;
             _dapperRepository = dapperRepository;
@@ -85,11 +88,11 @@ namespace ExpenseTracker.API.Controllers
 
                 expenseGroups = includeExpenses ? 
                     _repository.GetExpenseGroupsWithExpenses().ApplySort(sort) : 
-                    _repository.GetExpenseGroups().ApplySort(sort);
+                    _repository.GetAllAsQueryable().ApplySort(sort);
 
                 if (status != null)
                 {
-                    var expenseGroupStatus = _repository.GetExpenseGroupStatusses().FirstOrDefault(egs => string.Equals(egs.Description, status, StringComparison.CurrentCultureIgnoreCase));
+                    var expenseGroupStatus = _statusRepository.GetAllAsQueryable().FirstOrDefault(egs => string.Equals(egs.Description, status, StringComparison.CurrentCultureIgnoreCase));
                     if (expenseGroupStatus != null)
                     {
                         var statusId =
@@ -174,7 +177,7 @@ namespace ExpenseTracker.API.Controllers
         {
             try
             {
-                var expenseGroup = _repository.GetExpenseGroup(id);
+                var expenseGroup = _repository.GetById(id);
 
                 if (expenseGroup == null)
                 {
@@ -202,7 +205,7 @@ namespace ExpenseTracker.API.Controllers
                 }
                 else
                 {
-                    var result = _repository.InsertExpenseGroup(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
+                    var result = _repository.Insert(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
 
                     if (result.Status == RepositoryActionStatus.Created)
                     {
@@ -230,7 +233,7 @@ namespace ExpenseTracker.API.Controllers
                     return BadRequest();
                 }
 
-                var result = _repository.UpdateExpenseGroup(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
+                var result = _repository.Update(_expenseGroupFactory.CreateExpenseGroup(expenseGroup));
                 if (result.Status == RepositoryActionStatus.NotFound)
                 {
                     return NotFound();
@@ -259,7 +262,7 @@ namespace ExpenseTracker.API.Controllers
                     return BadRequest();
                 }
 
-                var expenseGroupToUpdate = _repository.GetExpenseGroup(id);
+                var expenseGroupToUpdate = _repository.GetById(id);
 
                 if (expenseGroupToUpdate == null)
                 {
@@ -271,7 +274,7 @@ namespace ExpenseTracker.API.Controllers
                 expenseGroupPatchDocument.ApplyTo(eg);
 
                 var result =
-                    _repository.UpdateExpenseGroup(_expenseGroupFactory.CreateExpenseGroup(eg));
+                    _repository.Update(_expenseGroupFactory.CreateExpenseGroup(eg));
 
                 if (result.Status == RepositoryActionStatus.Updated)
                 {
@@ -291,7 +294,7 @@ namespace ExpenseTracker.API.Controllers
         {
             try
             {
-                var result = _repository.DeleteExpenseGroup(id);
+                var result = _repository.Delete(id);
 
                 if (result.Status == RepositoryActionStatus.Deleted)
                 {

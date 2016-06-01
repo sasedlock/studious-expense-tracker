@@ -7,10 +7,8 @@ namespace ExpenseTracker.Repository.Entities
     using System.Data.Entity.Spatial;
 
     [Table("Expense")]
-    public partial class Expense
+    public class Expense : ExpenseGroupModel
     {
-        public int Id { get; set; }
-
         [Required]
         [StringLength(100)]
         public string Description { get; set; }

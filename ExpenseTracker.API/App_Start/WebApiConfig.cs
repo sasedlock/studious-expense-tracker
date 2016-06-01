@@ -16,6 +16,9 @@ using ExpenseTracker.Repository;
 using ExpenseTracker.Repository.Dapper;
 using ExpenseTracker.Repository.Entities;
 using ExpenseTracker.Repository.Factories;
+using ExpenseTracker.Repository.Interfaces;
+using ExpenseTracker.Repository.Repositories;
+using ExpenseGroupStatusRepository = ExpenseTracker.Repository.Repositories.ExpenseGroupStatusRepository;
 
 namespace ExpenseTracker.API
 {
@@ -41,10 +44,14 @@ namespace ExpenseTracker.API
             builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
             builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();
 
-            builder.RegisterDecorator<IExpenseTrackerRepository>(
-                (r, inner) => new RepositoryLogger(inner),
-                fromKey: "repository"
-                );
+            builder.RegisterType<ExpenseRepository>().As<IExpenseRepository>();
+            builder.RegisterType<ExpenseGroupRepository>().As<IExpenseGroupRepository>();
+            builder.RegisterType<ExpenseGroupStatusRepository>().As<IExpenseGroupStatusRepository>();
+
+            //builder.RegisterDecorator<IExpenseTrackerRepository>(
+            //    (r, inner) => new RepositoryLogger(inner),
+            //    fromKey: "repository"
+            //    );
 
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 

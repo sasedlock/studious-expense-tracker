@@ -10,26 +10,18 @@ using System.Web;
 using System.Web.Http;
 using ExpenseTracker.API.Helpers;
 using ExpenseTracker.API.Loggers;
+using ExpenseTracker.Repository.Interfaces;
 
 namespace ExpenseTracker.API.Controllers
 {
     [RoutePrefix("api")]
     public class ExpensesController : ApiController
     {
-        private IExpenseTrackerRepository _repository;
+        private IExpenseRepository _repository;
         private ExpenseFactory _expenseFactory = new ExpenseFactory();
         private IUrlHelper _urlHelper;
         private const int MaxPageSize = 10;
-
-        public ExpensesController() : this(
-            new RepositoryLogger( 
-                new ExpenseTrackerEFRepository(
-                    new Repository.Entities.ExpenseTrackerContext())), 
-            new ExpenseTrackerUrlHelper())
-        {
-        }
-
-        public ExpensesController(IExpenseTrackerRepository repository, IUrlHelper urlHelper)
+        public ExpensesController(IExpenseRepository repository, IUrlHelper urlHelper)
         {
             _repository = repository;
             _urlHelper = urlHelper;
@@ -54,7 +46,7 @@ namespace ExpenseTracker.API.Controllers
                     listOfFields = fields.ToLower().Split(',').ToList();
                 }
 
-                var expenses = _repository.GetExpenses(expenseGroupId).ApplySort(sort);
+                var expenses = _repository.GetExpensesByExpenseGroupId(expenseGroupId).ApplySort(sort);
 
                 if (expenses == null)
                 {
@@ -128,11 +120,11 @@ namespace ExpenseTracker.API.Controllers
 
                 if (expenseGroupId == null)
                 {
-                    expense = _repository.GetExpense(id);
+                    expense = _repository.GetById(id);
                 }
                 else
                 {
-                    var expensesForGroup = _repository.GetExpenses((int)expenseGroupId);
+                    var expensesForGroup = _repository.GetExpensesByExpenseGroupId((int)expenseGroupId);
 
                     if (expensesForGroup != null)
                     {
@@ -165,11 +157,11 @@ namespace ExpenseTracker.API.Controllers
 
                 if (expenseGroupId == null)
                 {
-                    expense = _repository.GetExpense(id);
+                    expense = _repository.GetById(id);
                 }
                 else
                 {
-                    var expensesForGroup = _repository.GetExpenses((int)expenseGroupId);
+                    var expensesForGroup = _repository.GetExpensesByExpenseGroupId((int)expenseGroupId);
 
                     if (expensesForGroup != null)
                     {
@@ -199,7 +191,7 @@ namespace ExpenseTracker.API.Controllers
             try
             {
 
-                var result = _repository.DeleteExpense(id);
+                var result = _repository.Delete(id);
 
                 if (result.Status == RepositoryActionStatus.Deleted)
                 {
@@ -231,7 +223,7 @@ namespace ExpenseTracker.API.Controllers
                 // map
                 var exp = _expenseFactory.CreateExpense(expense);
 
-                var result = _repository.InsertExpense(exp);
+                var result = _repository.Insert(exp);
                 if (result.Status == RepositoryActionStatus.Created)
                 {
                     // map to dto
@@ -262,7 +254,7 @@ namespace ExpenseTracker.API.Controllers
                 // map
                 var exp = _expenseFactory.CreateExpense(expense);
 
-                var result = _repository.UpdateExpense(exp);
+                var result = _repository.Update(exp);
                 if (result.Status == RepositoryActionStatus.Updated)
                 {
                     // map to dto
@@ -295,7 +287,7 @@ namespace ExpenseTracker.API.Controllers
                     return BadRequest();
                 }
 
-                var expense = _repository.GetExpense(id);
+                var expense = _repository.GetById(id);
                 if (expense == null)
                 {
                     return NotFound();
@@ -308,7 +300,7 @@ namespace ExpenseTracker.API.Controllers
                 expensePatchDocument.ApplyTo(exp);
 
                 // map the DTO with applied changes to the entity, & update
-                var result = _repository.UpdateExpense(_expenseFactory.CreateExpense(exp));
+                var result = _repository.Update(_expenseFactory.CreateExpense(exp));
 
                 if (result.Status == RepositoryActionStatus.Updated)
                 {

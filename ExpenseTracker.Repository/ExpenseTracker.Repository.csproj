@@ -78,6 +78,7 @@
     <Compile Include="Dapper\IExpenseTrackerDapperRepository.cs" />
     <Compile Include="Entities\Expense.cs" />
     <Compile Include="Entities\ExpenseGroup.cs" />
+    <Compile Include="Entities\ExpenseGroupModel.cs" />
     <Compile Include="Entities\ExpenseGroupStatus.cs" />
     <Compile Include="Entities\ExpenseTrackerContext.cs" />
     <Compile Include="Entities\IExpenseTrackerDbContext.cs" />
@@ -90,8 +91,14 @@
     <Compile Include="Factories\IExpenseGroupFactory.cs" />
     <Compile Include="Helpers\ListExtensions.cs" />
     <Compile Include="IExpenseTrackerEFRepository.cs" />
+    <Compile Include="Interfaces\IExpenseGroupRepository.cs" />
+    <Compile Include="Interfaces\IExpenseGroupStatusRepository.cs" />
+    <Compile Include="Interfaces\IExpenseRepository.cs" />
     <Compile Include="Interfaces\IExpenseTrackerGenericRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\ExpenseGroupStatusRepository.cs" />
+    <Compile Include="Repositories\ExpenseGroupRepository.cs" />
+    <Compile Include="Repositories\ExpenseRepository.cs" />
     <Compile Include="RepositoryActionResult.cs" />
     <Compile Include="RepositoryActionStatus.cs" />
   </ItemGroup>
@@ -121,6 +128,7 @@
       <Name>ExpenseTracker.DTO</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

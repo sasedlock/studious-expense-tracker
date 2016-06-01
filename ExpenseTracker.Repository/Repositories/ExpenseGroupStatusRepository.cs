@@ -2,25 +2,25 @@
 using ExpenseTracker.Repository.Entities;
 using ExpenseTracker.Repository.Interfaces;
 
-namespace ExpenseTracker.Repository
+namespace ExpenseTracker.Repository.Repositories
 {
     public class ExpenseGroupStatusRepository : IExpenseGroupStatusRepository
     {
-        private readonly IExpenseTrackerDbContext _context;
+        private readonly IExpenseTrackerDbContext _ctx;
 
-        public ExpenseGroupStatusRepository(IExpenseTrackerDbContext context)
+        public ExpenseGroupStatusRepository(IExpenseTrackerDbContext ctx)
         {
-            _context = context;
+            _ctx = ctx;
         }
 
         public ExpenseGroupStatus GetById(int id)
         {
-            return _context.ExpenseGroupStatusses.FirstOrDefault(egs => egs.Id == id);
+            return _ctx.ExpenseGroupStatusses.FirstOrDefault(egs => egs.Id == id);
         }
 
         public IQueryable<ExpenseGroupStatus> GetAllAsQueryable()
         {
-            return _context.ExpenseGroupStatusses;
+            return _ctx.ExpenseGroupStatusses.AsQueryable();
         }
 
         public RepositoryActionResult<ExpenseGroupStatus> Insert(ExpenseGroupStatus entity)

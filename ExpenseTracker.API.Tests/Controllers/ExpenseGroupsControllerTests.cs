@@ -16,6 +16,7 @@ using ExpenseTracker.Repository;
 using ExpenseTracker.Repository.Dapper;
 using ExpenseTracker.Repository.Entities;
 using ExpenseTracker.Repository.Factories;
+using ExpenseTracker.Repository.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -24,7 +25,8 @@ namespace ExpenseTracker.API.Tests.Controllers
     [TestClass]
     public class ExpenseGroupsControllerTests
     {
-        private Mock<IExpenseTrackerRepository> _mockRespository;
+        private Mock<IExpenseGroupRepository> _mockExpenseGroupRespository;
+        private Mock<IExpenseGroupStatusRepository> _mockExpenseGroupStatusRepository;
         private Mock<IExpenseGroupFactory> _mockFactory;
         private Mock<IUrlHelper> _mockUrlHelper;
         private Mock<IExpenseTrackerDapperRepository> _mockDapperRepository;
@@ -108,9 +110,11 @@ namespace ExpenseTracker.API.Tests.Controllers
                 }
             };
 
-            _mockRespository = new Mock<IExpenseTrackerRepository>();
-            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
-            _mockRespository.Setup(r => r.GetExpenseGroupStatusses()).Returns(_expenseGroupStatuses.AsQueryable());
+            _mockExpenseGroupStatusRepository = new Mock<IExpenseGroupStatusRepository>();
+
+            _mockExpenseGroupRespository = new Mock<IExpenseGroupRepository>();
+            _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockExpenseGroupStatusRepository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupStatuses.AsQueryable());
 
             _mockFactory = new Mock<IExpenseGroupFactory>();
             _mockFactory.Setup(f => f.CreateExpenseGroups(_expenseGroupEntities)).Returns(_expenseGroupDtos);
@@ -135,7 +139,7 @@ namespace ExpenseTracker.API.Tests.Controllers
         [TestMethod]
         public void GetExpenseGroupsShouldReturnAllAvailableExpenseGroups()
         {
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -182,7 +186,7 @@ namespace ExpenseTracker.API.Tests.Controllers
                             egl => egl[0].Description == expectedExpenseGroupEntityList[0].Description)))
                 .Returns(expectedExpenseGroupDtoList);
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -231,7 +235,7 @@ namespace ExpenseTracker.API.Tests.Controllers
                             egl => egl[0].Description == expectedExpenseGroupEntityList[0].Description)))
                 .Returns(expectedExpenseGroupDtoList);
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -247,10 +251,10 @@ namespace ExpenseTracker.API.Tests.Controllers
         [TestMethod]
         public void GetExpenseGroupsNullResultReturnsNotFoundResponse()
         {
-            _mockRespository = new Mock<IExpenseTrackerRepository>();
+            _mockExpenseGroupRespository = new Mock<IExpenseGroupRepository>();
             _mockFactory = new Mock<IExpenseGroupFactory>();
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
 
             var result = _controllerToTest.Get() as NotFoundResult;
 
@@ -262,10 +266,10 @@ namespace ExpenseTracker.API.Tests.Controllers
         {
             var emptyExpenseGroupList = new List<ExpenseGroup>();
 
-            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(emptyExpenseGroupList.AsQueryable());
+            _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(emptyExpenseGroupList.AsQueryable());
             _mockFactory = new Mock<IExpenseGroupFactory>();
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
 
             var result = _controllerToTest.Get() as NotFoundResult;
 
@@ -303,11 +307,11 @@ namespace ExpenseTracker.API.Tests.Controllers
                 });
             }
 
-            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupEntities.AsQueryable());
             _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == 5)))
                 .Returns(_expenseGroupDtos.Take(5));
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -354,11 +358,11 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             var pageSize = 7;
 
-            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupEntities.AsQueryable());
             _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == pageSize)))
                 .Returns(_expenseGroupDtos.Take(pageSize));
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -406,11 +410,11 @@ namespace ExpenseTracker.API.Tests.Controllers
             var pageSize = 12;
             var maxPageSize = 10;
 
-            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupEntities.AsQueryable());
             _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == maxPageSize)))
                 .Returns(_expenseGroupDtos.Take(maxPageSize));
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -459,11 +463,11 @@ namespace ExpenseTracker.API.Tests.Controllers
             var maxPageSize = 10;
             var pageIndex = 2;
 
-            _mockRespository.Setup(r => r.GetExpenseGroups()).Returns(_expenseGroupEntities.AsQueryable());
+            _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupEntities.AsQueryable());
             _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == pageSize && egl.TrueForAll(eg => eg.Id > pageSize))))
                 .Returns(_expenseGroupDtos.Skip((pageIndex - 1) * pageSize).Take(pageSize));
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
@@ -482,7 +486,7 @@ namespace ExpenseTracker.API.Tests.Controllers
         {
             var expected = 5;
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
 
             var actual = _controllerToTest.CalculatePageNumbers(15, 3);
 
@@ -494,7 +498,7 @@ namespace ExpenseTracker.API.Tests.Controllers
         {
             var expected = 5;
 
-            _controllerToTest = new ExpenseGroupsController(_mockRespository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
+            _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
 
             var actual = _controllerToTest.CalculatePageNumbers(14, 3);
 
