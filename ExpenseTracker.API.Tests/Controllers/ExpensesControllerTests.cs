@@ -16,7 +16,6 @@ namespace ExpenseTracker.API.Tests.Controllers
     [TestClass]
     public class ExpensesControllerTests
     {
-        private Mock<IExpenseTrackerRepository> _mockRepository;
         private Mock<IExpenseFactory> _mockFactory;
         private List<DTO.Expense> _expenseDtos;
         private List<Expense> _expenseEntities;

@@ -38,8 +38,8 @@ namespace ExpenseTracker.API
             var builder = new ContainerBuilder();
 
             builder.RegisterType<ExpenseTrackerContext>().As<IExpenseTrackerDbContext>();
-            builder.RegisterType<ExpenseTrackerEFRepository>()
-                .Named<IExpenseTrackerRepository>("repository");
+            //builder.RegisterType<ExpenseTrackerEFRepository>()
+            //    .Named<IExpenseTrackerRepository>("repository");
             builder.RegisterType<ExpenseTrackerDapperRepository>().As<IExpenseTrackerDapperRepository>();
             builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
             builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();

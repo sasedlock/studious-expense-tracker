@@ -144,10 +144,10 @@ namespace ExpenseTracker.API.Tests.Controllers
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
 
-            var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+            var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<object>>;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(_expenseGroupDtos, result.Content);
+            Assert.AreEqual(3, result.Content.Count());
         }
 
         [TestMethod]
@@ -193,7 +193,7 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             var status = "open";
             var result =
-                _controllerToTest.Get(status: status) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+                _controllerToTest.Get(status: status) as OkNegotiatedContentResult<IEnumerable<object>>;
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Content.ToList().Count);
@@ -235,6 +235,15 @@ namespace ExpenseTracker.API.Tests.Controllers
                             egl => egl[0].Description == expectedExpenseGroupEntityList[0].Description)))
                 .Returns(expectedExpenseGroupDtoList);
 
+            _mockFactory.Setup(
+                f =>
+                    f.CreateDataShapedObject(
+                        It.Is<ExpenseGroup>(
+                            eg => eg.UserId == expectedExpenseGroupDtoList[0].UserId)
+                        , It.IsAny<List<string>>()))
+                .Returns(expectedExpenseGroupDtoList);
+
+
             _controllerToTest = new ExpenseGroupsController(_mockExpenseGroupRespository.Object, _mockExpenseGroupStatusRepository.Object, _mockFactory.Object, _mockUrlHelper.Object, _mockDapperRepository.Object);
             _controllerToTest.Request = new HttpRequestMessage();
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
@@ -242,7 +251,7 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             var userId = "TestUser1";
             var result =
-                _controllerToTest.Get(userId: userId) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+                _controllerToTest.Get(userId: userId) as OkNegotiatedContentResult<IEnumerable<object>>;
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Content.ToList().Count);
@@ -316,13 +325,9 @@ namespace ExpenseTracker.API.Tests.Controllers
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
 
-            var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+            var result = _controllerToTest.Get() as OkNegotiatedContentResult<IEnumerable<object>>;
 
             Assert.AreEqual(5, result.Content.Count());
-            for (var i = 0; i < 5; i++)
-            {
-                Assert.AreEqual(_expenseGroupDtos[i].Id,result.Content.ToList()[i].Id);
-            }
         }
 
         [TestMethod]
@@ -367,13 +372,9 @@ namespace ExpenseTracker.API.Tests.Controllers
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
 
-            var result = _controllerToTest.Get(pageSize: pageSize) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+            var result = _controllerToTest.Get(pageSize: pageSize) as OkNegotiatedContentResult<IEnumerable<object>>;
 
             Assert.AreEqual(pageSize, result.Content.Count());
-            for (var i = 0; i < pageSize; i++)
-            {
-                Assert.AreEqual(_expenseGroupDtos[i].Id, result.Content.ToList()[i].Id);
-            }
         }
 
         [TestMethod]
@@ -419,13 +420,9 @@ namespace ExpenseTracker.API.Tests.Controllers
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
 
-            var result = _controllerToTest.Get(pageSize: pageSize) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+            var result = _controllerToTest.Get(pageSize: pageSize) as OkNegotiatedContentResult<IEnumerable<object>>;
 
             Assert.AreEqual(maxPageSize, result.Content.Count());
-            for (var i = 0; i < maxPageSize; i++)
-            {
-                Assert.AreEqual(_expenseGroupDtos[i].Id, result.Content.ToList()[i].Id);
-            }
         }
 
         [TestMethod]
@@ -433,7 +430,7 @@ namespace ExpenseTracker.API.Tests.Controllers
         {
             _expenseGroupEntities = new List<ExpenseGroup>();
 
-            for (var i = 0; i < 50; i++)
+            for (var i = 0; i < 13; i++)
             {
                 _expenseGroupEntities.Add(new ExpenseGroup
                 {
@@ -447,7 +444,7 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             _expenseGroupDtos = new List<DTO.ExpenseGroup>();
 
-            for (var i = 0; i < 50; i++)
+            for (var i = 0; i < 13; i++)
             {
                 _expenseGroupDtos.Add(new DTO.ExpenseGroup
                 {
@@ -461,7 +458,7 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             var pageSize = 5;
             var maxPageSize = 10;
-            var pageIndex = 2;
+            var pageIndex = 3;
 
             _mockExpenseGroupRespository.Setup(r => r.GetAllAsQueryable()).Returns(_expenseGroupEntities.AsQueryable());
             _mockFactory.Setup(f => f.CreateExpenseGroups(It.Is<List<ExpenseGroup>>(egl => egl.Count == pageSize && egl.TrueForAll(eg => eg.Id > pageSize))))
@@ -472,13 +469,9 @@ namespace ExpenseTracker.API.Tests.Controllers
             _controllerToTest.Request.RequestUri = new Uri("https://www.google.com/?search?q=hello");
             _controllerToTest.Configuration = new HttpConfiguration();
 
-            var result = _controllerToTest.Get(pageIndex: pageIndex) as OkNegotiatedContentResult<IEnumerable<DTO.ExpenseGroup>>;
+            var result = _controllerToTest.Get(pageIndex: pageIndex) as OkNegotiatedContentResult<IEnumerable<object>>;
 
-            Assert.AreEqual(pageSize, result.Content.Count());
-            for (var i = (pageIndex - 1) * pageSize; i < pageSize; i++)
-            {
-                Assert.AreEqual(_expenseGroupDtos[i].Id, result.Content.ToList()[i].Id);
-            }
+            Assert.AreEqual(3, result.Content.Count());
         }
         
         [TestMethod]
