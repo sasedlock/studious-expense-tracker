@@ -4,15 +4,16 @@ using System.Linq;
 using System.Web;
 using ExpenseTracker.Repository;
 using ExpenseTracker.Repository.Entities;
+using ExpenseTracker.Repository.Interfaces;
 using Serilog;
 
 namespace ExpenseTracker.API.Loggers
 {
-    public class RepositoryLogger : IExpenseTrackerRepository
+    public class RepositoryLogger<T> : IExpenseTrackerGenericRepository<T> where T : class 
     {
-        private readonly IExpenseTrackerRepository _inner;
+        private readonly IExpenseTrackerGenericRepository<T> _inner;
 
-        public RepositoryLogger(IExpenseTrackerRepository inner)
+        public RepositoryLogger(IExpenseTrackerGenericRepository<T> inner)
         {
             if (inner == null)
             {
@@ -21,99 +22,32 @@ namespace ExpenseTracker.API.Loggers
             _inner = inner;
         }
 
-        public RepositoryActionResult<Expense> DeleteExpense(int id)
+        public RepositoryActionResult<T> Delete(int id)
         {
-            return this._inner.DeleteExpense(id);
+            return this._inner.Delete(id);
         }
 
-        public RepositoryActionResult<ExpenseGroup> DeleteExpenseGroup(int id)
+        public T GetById(int id)
         {
-            return this._inner.DeleteExpenseGroup(id);
+            return this._inner.GetById(id);
         }
 
-        public Expense GetExpense(int id, int? expenseGroupId = null)
+        public IQueryable<T> GetAllAsQueryable()
         {
-            return this._inner.GetExpense(id, expenseGroupId);
-        }
-
-        public ExpenseGroup GetExpenseGroup(int id)
-        {
-            var result = this._inner.GetExpenseGroup(id);
-            Log.Information("The result of getting ExpenseGroup with id {id} is {@result}", id, result);
-            return result;
-        }
-
-        public ExpenseGroup GetExpenseGroup(int id, string userId)
-        {
-            return this._inner.GetExpenseGroup(id, userId);
-        }
-
-        public IQueryable<ExpenseGroup> GetExpenseGroups()
-        {
-            return this._inner.GetExpenseGroups();
-        }
-
-        public IQueryable<ExpenseGroup> GetExpenseGroups(string userId)
-        {
-            return this._inner.GetExpenseGroups(userId);
-        }
-
-        public ExpenseGroupStatus GetExpenseGroupStatus(int id)
-        {
-            return this._inner.GetExpenseGroupStatus(id);
-        }
-
-        public IQueryable<ExpenseGroupStatus> GetExpenseGroupStatusses()
-        {
-            return this._inner.GetExpenseGroupStatusses();
-        }
-
-        public IQueryable<ExpenseGroup> GetExpenseGroupsWithExpenses()
-        {
-            return this._inner.GetExpenseGroupsWithExpenses();
-        }
-
-        public ExpenseGroup GetExpenseGroupWithExpenses(int id)
-        {
-            return this._inner.GetExpenseGroupWithExpenses(id);
-        }
-
-        public ExpenseGroup GetExpenseGroupWithExpenses(int id, string userId)
-        {
-            return this._inner.GetExpenseGroupWithExpenses(id, userId);
-        }
-
-        public IQueryable<Expense> GetExpenses()
-        {
-            return this._inner.GetExpenses();
-        }
-
-        public IQueryable<Expense> GetExpenses(int expenseGroupId)
-        {
-            using (Log.Logger.BeginTimedOperation("Getting Expenses by ExpenseGroup"))
+            using (Log.Logger.BeginTimedOperation("Getting queryable of {0}", typeof (T).Name))
             {
-                return this._inner.GetExpenses(expenseGroupId);
+                return this._inner.GetAllAsQueryable();
             }
         }
 
-        public RepositoryActionResult<Expense> InsertExpense(Expense e)
+        public RepositoryActionResult<T> Insert(T entity)
         {
-            return this._inner.InsertExpense(e);
+            return this._inner.Insert(entity);
         }
 
-        public RepositoryActionResult<ExpenseGroup> InsertExpenseGroup(ExpenseGroup eg)
+        public RepositoryActionResult<T> Update(T entity)
         {
-            return this._inner.InsertExpenseGroup(eg);
-        }
-
-        public RepositoryActionResult<Expense> UpdateExpense(Expense e)
-        {
-            return this._inner.UpdateExpense(e);
-        }
-
-        public RepositoryActionResult<ExpenseGroup> UpdateExpenseGroup(ExpenseGroup eg)
-        {
-            return this._inner.UpdateExpenseGroup(eg);
+            return this._inner.Update(entity);
         }
     }
 }
