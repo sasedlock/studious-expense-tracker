@@ -90,7 +90,6 @@
     <Compile Include="Factories\IExpenseFactory.cs" />
     <Compile Include="Factories\IExpenseGroupFactory.cs" />
     <Compile Include="Helpers\ListExtensions.cs" />
-    <Compile Include="IExpenseTrackerEFRepository.cs" />
     <Compile Include="Interfaces\IExpenseGroupRepository.cs" />
     <Compile Include="Interfaces\IExpenseGroupStatusRepository.cs" />
     <Compile Include="Interfaces\IExpenseRepository.cs" />
