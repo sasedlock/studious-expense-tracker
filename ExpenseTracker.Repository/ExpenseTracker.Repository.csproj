@@ -81,6 +81,7 @@
     <Compile Include="Entities\ExpenseGroupModel.cs" />
     <Compile Include="Entities\ExpenseGroupStatus.cs" />
     <Compile Include="Entities\ExpenseTrackerContext.cs" />
+    <Compile Include="Entities\ExpenseTrackerModel.cs" />
     <Compile Include="Entities\IExpenseTrackerDbContext.cs" />
     <Compile Include="ExpenseGroupStatusRepository.cs" />
     <Compile Include="ExpenseTrackerRepository.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Repositories\ExpenseGroupStatusRepository.cs" />
     <Compile Include="Repositories\ExpenseGroupRepository.cs" />
     <Compile Include="Repositories\ExpenseRepository.cs" />
+    <Compile Include="Repositories\ExpenseTrackerRepository.cs" />
     <Compile Include="RepositoryActionResult.cs" />
     <Compile Include="RepositoryActionStatus.cs" />
   </ItemGroup>

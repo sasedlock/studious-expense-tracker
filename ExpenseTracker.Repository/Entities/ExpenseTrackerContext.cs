@@ -48,7 +48,12 @@ namespace ExpenseTracker.Repository.Entities
             Entry(entity).State = EntityState.Detached;
         }
 
-        DbEntityEntry Entry(Object entity)
+        public new IDbSet<T> Set<T>() where T : ExpenseTrackerModel
+        {
+            return base.Set<T>();
+        }
+
+        new DbEntityEntry Entry(Object entity)
         {
             return base.Entry(entity);
         }

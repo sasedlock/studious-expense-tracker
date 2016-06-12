@@ -18,5 +18,6 @@ namespace ExpenseTracker.Repository.Entities
         void SetModified(Object entity);
         void SetDetached(Object entity);
         DbContextConfiguration Configuration { get; }
+        IDbSet<T> Set<T>() where T : ExpenseTrackerModel;
     }
 }

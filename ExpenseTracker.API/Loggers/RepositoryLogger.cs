@@ -29,7 +29,11 @@ namespace ExpenseTracker.API.Loggers
 
         public T GetById(int id)
         {
-            return this._inner.GetById(id);
+            using (
+                Log.Logger.BeginTimedOperation($"Getting object of type {typeof (T).Name} with id {id}"))
+            {
+                return this._inner.GetById(id);
+            }
         }
 
         public IQueryable<T> GetAllAsQueryable()

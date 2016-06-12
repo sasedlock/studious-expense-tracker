@@ -1,7 +1,6 @@
 ﻿namespace ExpenseTracker.Repository.Entities
 {
-    public class ExpenseGroupModel
+    public class ExpenseGroupModel : ExpenseTrackerModel
     {
-        public int Id { get; set; }
     }
 }

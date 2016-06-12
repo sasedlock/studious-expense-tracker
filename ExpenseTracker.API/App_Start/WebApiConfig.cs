@@ -38,8 +38,6 @@ namespace ExpenseTracker.API
             var builder = new ContainerBuilder();
 
             builder.RegisterType<ExpenseTrackerContext>().As<IExpenseTrackerDbContext>();
-            //builder.RegisterType<ExpenseTrackerEFRepository>()
-            //    .Named<IExpenseTrackerRepository>("repository");
             builder.RegisterType<ExpenseTrackerDapperRepository>().As<IExpenseTrackerDapperRepository>();
             builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
             builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();
@@ -48,10 +46,13 @@ namespace ExpenseTracker.API
             builder.RegisterType<ExpenseGroupRepository>().As<IExpenseGroupRepository>();
             builder.RegisterType<ExpenseGroupStatusRepository>().As<IExpenseGroupStatusRepository>();
 
-            //builder.RegisterDecorator<IExpenseTrackerRepository>(
-            //    (r, inner) => new RepositoryLogger(inner),
-            //    fromKey: "repository"
-            //    );
+            builder.RegisterType<ExpenseRepository>()
+                .Named<IExpenseTrackerGenericRepository<Expense>>("repoImplementation");
+
+            builder.RegisterGenericDecorator(
+                typeof (RepositoryLogger<>),
+                typeof (IExpenseTrackerGenericRepository<>),
+                "repoImplementation");
 
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
