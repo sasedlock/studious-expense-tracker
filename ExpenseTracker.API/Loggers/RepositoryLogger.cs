@@ -9,7 +9,7 @@ using Serilog;
 
 namespace ExpenseTracker.API.Loggers
 {
-    public class RepositoryLogger<T> : IExpenseTrackerGenericRepository<T> where T : class 
+    public class RepositoryLogger<T> : IExpenseTrackerGenericRepository<T> where T : ExpenseTrackerModel 
     {
         private readonly IExpenseTrackerGenericRepository<T> _inner;
 

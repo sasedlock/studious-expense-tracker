@@ -86,8 +86,8 @@ namespace ExpenseTracker.API.Controllers
 
                 IQueryable<Repository.Entities.ExpenseGroup> expenseGroups = null;
 
-                expenseGroups = includeExpenses ? 
-                    _repository.GetExpenseGroupsWithExpenses().ApplySort(sort) : 
+                expenseGroups = includeExpenses ?
+                    _repository.GetExpenseGroupsWithExpenses().ApplySort(sort) :
                     _repository.GetAllAsQueryable().ApplySort(sort);
 
                 if (status != null)
@@ -122,7 +122,7 @@ namespace ExpenseTracker.API.Controllers
 
                     expenseGroups = expenseGroups.Skip((pageIndex - 1) * pageSize).Take(pageSize);
 
-                    var prevLink = 
+                    var prevLink =
                         pageIndex > 1 ?
                         _urlHelper.Link("ExpenseGroupsList",
                         new
@@ -173,6 +173,7 @@ namespace ExpenseTracker.API.Controllers
             }
         }
 
+        //[Route("api/expensegroups")]
         public IHttpActionResult Get(int id)
         {
             try

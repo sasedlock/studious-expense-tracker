@@ -282,7 +282,7 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             var result = _controllerToTest.Get() as NotFoundResult;
 
-            Assert.IsInstanceOfType(result, typeof (NotFoundResult));
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -473,7 +473,7 @@ namespace ExpenseTracker.API.Tests.Controllers
 
             Assert.AreEqual(3, result.Content.Count());
         }
-        
+
         [TestMethod]
         public void CalculatePageNumbersReturnsExpectedResultEvenlyDistributed()
         {

@@ -16,10 +16,6 @@ namespace ExpenseTracker.API
         public void Configuration(IAppBuilder app)
         {
             app.UseWebApi(WebApiConfig.Register());
-
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Seq("http://localhost:5341")
-                .CreateLogger();
         }
     }
 }

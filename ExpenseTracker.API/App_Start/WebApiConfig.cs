@@ -12,12 +12,12 @@ using Autofac.Core;
 using Autofac.Integration.WebApi;
 using ExpenseTracker.API.Helpers;
 using ExpenseTracker.API.Loggers;
-using ExpenseTracker.Repository;
 using ExpenseTracker.Repository.Dapper;
 using ExpenseTracker.Repository.Entities;
 using ExpenseTracker.Repository.Factories;
 using ExpenseTracker.Repository.Interfaces;
 using ExpenseTracker.Repository.Repositories;
+using Serilog;
 using ExpenseGroupStatusRepository = ExpenseTracker.Repository.Repositories.ExpenseGroupStatusRepository;
 
 namespace ExpenseTracker.API
@@ -35,29 +35,8 @@ namespace ExpenseTracker.API
 
             config.Routes.AddHttpRoutes();
 
-            var builder = new ContainerBuilder();
-
-            builder.RegisterType<ExpenseTrackerContext>().As<IExpenseTrackerDbContext>();
-            builder.RegisterType<ExpenseTrackerDapperRepository>().As<IExpenseTrackerDapperRepository>();
-            builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
-            builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();
-
-            builder.RegisterType<ExpenseRepository>().As<IExpenseRepository>();
-            builder.RegisterType<ExpenseGroupRepository>().As<IExpenseGroupRepository>();
-            builder.RegisterType<ExpenseGroupStatusRepository>().As<IExpenseGroupStatusRepository>();
-
-            builder.RegisterType<ExpenseRepository>()
-                .Named<IExpenseTrackerGenericRepository<Expense>>("repoImplementation");
-
-            builder.RegisterGenericDecorator(
-                typeof (RepositoryLogger<>),
-                typeof (IExpenseTrackerGenericRepository<>),
-                "repoImplementation");
-
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-
-            var container = builder.Build();
-
+            var container = CreateDependencyInjectionContainer();
+            
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
             config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
@@ -74,7 +53,55 @@ namespace ExpenseTracker.API
             var cacheCowMessageHandler = new CacheCow.Server.CachingHandler(config);
             config.MessageHandlers.Add(cacheCowMessageHandler);
 
-            return config; // test
+            // Configure logger
+            ConfigureLogger();
+
+            return config; 
+        }
+
+        public static void ConfigureLogger()
+        {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Seq("http://localhost:5341")
+                .CreateLogger();
+        }
+
+        public static IContainer CreateDependencyInjectionContainer()
+        {
+            var builder = new ContainerBuilder();
+
+            // Register 'simpler' types
+            builder.RegisterType<ExpenseTrackerContext>().As<IExpenseTrackerDbContext>();
+            builder.RegisterType<ExpenseTrackerDapperRepository>().As<IExpenseTrackerDapperRepository>();
+            builder.RegisterType<ExpenseGroupFactory>().As<IExpenseGroupFactory>();
+            builder.RegisterType<ExpenseTrackerUrlHelper>().As<IUrlHelper>();
+
+            // Register repos
+            builder.RegisterType<ExpenseRepository>().As<IExpenseRepository>();
+            builder.RegisterType<ExpenseGroupRepository>().As<IExpenseGroupRepository>();
+            builder.RegisterType<ExpenseGroupStatusRepository>().As<IExpenseGroupStatusRepository>();
+
+            // Trying to register repos as a keyed service of generic repo
+            builder.RegisterAssemblyTypes(typeof (ExpenseRepository).Assembly)
+                .As(type => type.GetInterfaces()
+                    .Where(interfaceType => interfaceType.IsClosedTypeOf(typeof (IExpenseTrackerGenericRepository<>)))
+                    .Select(interfaceType => new KeyedService("genericRepo", interfaceType)));
+
+            // Register generic ExpenseTrackerRepo
+            builder.RegisterGeneric(typeof(ExpenseTrackerRepository<>))
+                .Named("genericRepo", typeof(IExpenseTrackerGenericRepository<>))
+                .InstancePerLifetimeScope();
+
+            // Register generic repo decorator
+            builder.RegisterGenericDecorator(
+                typeof(RepositoryLogger<>),
+                typeof(IExpenseTrackerGenericRepository<>),
+                fromKey: "genericRepo")
+                .InstancePerLifetimeScope();
+            
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+
+            return builder.Build();
         }
 
         public static void AddHttpRoutes(this HttpRouteCollection routeCollection)
