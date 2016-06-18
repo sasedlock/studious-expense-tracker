@@ -37,7 +37,7 @@
                 @((Model.ExpenseGroupStatuses as List<ExpenseTracker.DTO.ExpenseGroupStatus>).First(egs => egs.Id == item.ExpenseGroupStatusId).Description)
             </td>
             <td>
-                @Html.ActionLink("Edit", "Index")
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id})
                 @Html.ActionLink("Details", "Index")
                 @Html.ActionLink("Delete", "Index")
             </td>

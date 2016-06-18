@@ -89,5 +89,25 @@ namespace ExpenseTracker.WebClient.Controllers
                 return Content("An error occurred");
             }
         }
+
+        public async Task<ActionResult> Edit(int id)
+        {
+            var client = ExpenseTrackerHttpClient.GetClient();
+
+            var response = await client.GetAsync("api/expensegroups/" + id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var deserialized = JsonConvert.DeserializeObject<ExpenseGroup>(content);
+
+                return View(deserialized);
+            }
+
+            return Content("An error occurred");
+        }
+
+
     }
 }
