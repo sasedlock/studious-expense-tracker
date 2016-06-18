@@ -1,18 +1,46 @@
-﻿@model System.Collections.Generic.IEnumerable<ExpenseTracker.DTO.ExpenseGroup>
+﻿@model ExpenseTracker.WebClient.Models.ExpenseGroupsViewModel
+
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css"/>
 
 @{
+    ViewBag.Title = "View";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
+<h2>Your Groups of Expenses</h2>
 
-<html>
-<head>
-    <title>Expense Groups</title>
-</head>
-<body>
-<div>
-      
-</div>
-</body>
-</html>
+<p>
+    @Html.ActionLink("Create New", "Index")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Title
+        </th>
+        <th>
+            Description
+        </th>
+        <th>
+            Status
+        </th>
+    </tr>
+    @foreach (var item in Model.ExpenseGroups)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExpenseGroupStatusId)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Index")
+                @Html.ActionLink("Details", "Index")
+                @Html.ActionLink("Delete", "Index")
+            </td>
+        </tr>
+    }
+</table>
