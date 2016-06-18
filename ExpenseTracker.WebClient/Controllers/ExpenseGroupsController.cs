@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using System.Web.Mvc;
 using ExpenseTracker.DTO;
 using ExpenseTracker.WebClient.Helpers;
@@ -52,6 +51,43 @@ namespace ExpenseTracker.WebClient.Controllers
             }
 
             return View(model);
+        }
+
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Create(ExpenseGroup expenseGroup)
+        {
+            try
+            {
+                var client = ExpenseTrackerHttpClient.GetClient();
+
+                expenseGroup.ExpenseGroupStatusId = 1;
+                expenseGroup.UserId = @"https://expensetrackeridsrv3/embedded_1";
+
+                var serializedItemToCreate = JsonConvert.SerializeObject(expenseGroup);
+                var response = await client.PostAsync("api/expensegroups", 
+                    new StringContent(serializedItemToCreate,
+                    System.Text.Encoding.Unicode,
+                    "application/json"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return Content("An error occurred");
+                }
+            }
+            catch
+            {
+                return Content("An error occurred");
+            }
         }
     }
 }
