@@ -1,4 +1,5 @@
 ﻿@model ExpenseTracker.WebClient.Models.ExpenseGroupsViewModel
+@using PagedList.Mvc;
 
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css"/>
 
@@ -37,10 +38,14 @@
                 @((Model.ExpenseGroupStatuses as List<ExpenseTracker.DTO.ExpenseGroupStatus>).First(egs => egs.Id == item.ExpenseGroupStatusId).Description)
             </td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { id = item.Id})
+                @Html.ActionLink("Edit", "Edit", new {id = item.Id})
                 @Html.ActionLink("Details", "Index")
                 @Html.ActionLink("Delete", "Delete", new {id = item.Id})
             </td>
         </tr>
     }
 </table>
+
+@(Model.PagingInfo.CurrentPage) of @Model.PagingInfo.TotalPages
+
+@Html.PagedListPager(Model.ExpenseGroups, page => Url.Action("Index", new { page }))
