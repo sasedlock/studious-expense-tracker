@@ -14,7 +14,7 @@ namespace ExpenseTracker.Repository.Entities
             Expenses = new HashSet<Expense>();
         }
 
-        [Required]
+        //[Required]
         [StringLength(100)]
         public string UserId { get; set; }
 

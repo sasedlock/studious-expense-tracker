@@ -95,6 +95,11 @@
     <Compile Include="Interfaces\IExpenseGroupStatusRepository.cs" />
     <Compile Include="Interfaces\IExpenseRepository.cs" />
     <Compile Include="Interfaces\IExpenseTrackerGenericRepository.cs" />
+    <Compile Include="Migrations\201607090423504_InitialMigration.cs" />
+    <Compile Include="Migrations\201607090423504_InitialMigration.Designer.cs">
+      <DependentUpon>201607090423504_InitialMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\ExpenseGroupStatusRepository.cs" />
     <Compile Include="Repositories\ExpenseGroupRepository.cs" />
@@ -121,6 +126,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +135,11 @@
       <Name>ExpenseTracker.DTO</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201607090423504_InitialMigration.resx">
+      <DependentUpon>201607090423504_InitialMigration.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -107,5 +107,38 @@ namespace ExpenseTracker.WebClient.Controllers
 
             return Content("An error occurred");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Edit(int id, ExpenseGroup expenseGroup)
+        {
+            try
+            {
+                var client = ExpenseTrackerHttpClient.GetClient();
+
+                // TODO - Provide the ability to update the status of an expense group
+                expenseGroup.ExpenseGroupStatusId = 1;
+                expenseGroup.UserId = @"https://expensetrackeridsrv3/embedded_1";
+
+                var serializedItemToUpdate = JsonConvert.SerializeObject(expenseGroup);
+                var response = await client.PutAsync("api/expensegroups/" + id,
+                    new StringContent(serializedItemToUpdate,
+                        System.Text.Encoding.Unicode,
+                        "application/json"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return Content("An error occurred");
+                }
+            }
+            catch
+            {
+                return Content("An error occurred");
+            }
+        }
     }
 }
