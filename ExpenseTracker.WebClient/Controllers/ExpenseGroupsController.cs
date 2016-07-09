@@ -107,7 +107,5 @@ namespace ExpenseTracker.WebClient.Controllers
 
             return Content("An error occurred");
         }
-
-
     }
 }

@@ -68,7 +68,7 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [Route("api/expensegroups", Name = "ExpenseGroupsList")]
-        public IHttpActionResult Get(string sort = "id", string fields = null, string status = null, string userId = null, int pageSize = 5, int pageIndex = 1)
+        public IHttpActionResult Get(string sort = "id", string fields = null, string status = null, string userId = null, int pageSize = 10, int pageIndex = 1)
         {
             try
             {
