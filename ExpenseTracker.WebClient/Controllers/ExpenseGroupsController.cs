@@ -158,5 +158,21 @@ namespace ExpenseTracker.WebClient.Controllers
 
             return Content("An error occurred");
         }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(int id)
+        {
+            var client = ExpenseTrackerHttpClient.GetClient();
+
+            var response = await client.DeleteAsync("api/expensegroups/" + id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return Content("An error occurred");
+        }
     }
 }
